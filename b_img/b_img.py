@@ -135,12 +135,8 @@ class BFigureWorker:
         self.loc_x, self.loc_y = x, y
 
     def show_line(self, x1, y1, x2, y2, vall, data):
-        # self.draw_point(x2, y2)
-        # self.ctx.
         if first_x is not None and first_x != 0:
-            # self.surface = self.copy_surface
-            self.surface = cairo.ImageSurface.create_from_png(self.img_path)
-            # self.surface = cairo.ImageSurface.create_for_data(data, cairo.FORMAT_ARGB32, self.mat_width, self.mat_height)
+            # self.surface = cairo.ImageSurface.create_from_png(self.img_path)
             self.ctx = cairo.Context(self.surface)
             self.ctx.set_source_rgb(0, 0, 255)
             self.ctx.set_line_width(1)
@@ -166,26 +162,16 @@ class BFigureWorker:
             self.ctx.line_to(x2, y2)
             self.ctx.stroke()
             self.draw_point(x2, y2)
-        # buf = self.surface.get_data()
-        # arr = np.ndarray(shape=(self.mat_height, self.mat_width, 4), dtype=np.uint8, buffer=buf)
-        # return arr if arr is not None else self.source_mat
         return self.create_mat_from_buf(self.surface.get_data())
 
     def draw_point(self, x, y):
         self.ctx.set_source_rgb(0, 255, 255)
-        # self.ctx.set_line_width(9)
-        # self.ctx.translate(x, y)
         self.ctx.arc(x, y, 5, 0, 2 * math.pi)
-        # self.ctx.stroke_preserve()
-        # cr.set_source_rgb(0.3, 0.4, 0.6)
         self.ctx.fill()
-        # self.ctx.stroke()
         self.ctx.fill_preserve()
-        # self.ctx.save()
 
     def create_mat_from_buf(self, buf):
         arr = np.ndarray(shape=(self.mat_height, self.mat_width, 4), dtype=np.uint8, buffer=buf)
-        # print(arr.shape[0], ' ', arr.shape[1])
         return arr if arr is not None and arr.shape[0] > 0 and arr.shape[1] > 0 else self.source_mat
 
 

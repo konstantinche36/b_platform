@@ -150,11 +150,6 @@ class BFigureWorker:
             if vall:
                 self.ctx.stroke()
             self.loc_x, self.loc_y = x2, y2
-            # if vall:
-            #     self.surface = self.copy_surface
-            # print('!!!!!!!!!!!!!!')
-            # self.draw_point(x2, y2)
-            print('Draw1')
         return self.create_mat_from_buf(self.surface.get_data())
 
     def commit_line(self, x1, y1, x2, y2):

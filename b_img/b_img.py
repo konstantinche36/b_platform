@@ -136,7 +136,7 @@ class BFigureWorker:
 
     def show_line(self, x1, y1, x2, y2, vall, data):
         if first_x is not None and first_x != 0:
-            self.surface = cairo.ImageSurface.create_from_png(self.img_path)
+            # self.surface = cairo.ImageSurface.create_from_png(self.img_path)
             self.ctx = cairo.Context(self.surface)
             self.ctx.set_source_rgb(0, 0, 255)
             self.ctx.set_line_width(1)

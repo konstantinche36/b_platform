@@ -63,10 +63,7 @@ class BImageWorker:
 
     def show_image(self):
         cv2.setMouseCallback(WINDOW_NAME, self.click_event)
-        # print('TTTTTTTTT')
         cv2.imshow(WINDOW_NAME, self.img_mat)
-        # cv2.waitKey(0)
-        # cv2.destroyAllWindows()
         while (1):
             cv2.imshow(WINDOW_NAME, self.img_mat)
             if cv2.waitKey(20) & 0xFF == 27:
@@ -75,36 +72,12 @@ class BImageWorker:
 
     def click_event(self, event, x, y, flags, params):
         global bx1, by1, bx2, by2, cur_x, cur_y, first_x, first_y, second_x, second_y
-        # print(x, y)
-        # checking for left mouse clicks
         if event == cv2.EVENT_LBUTTONDOWN:
             first_x, first_y = x, y
+            self.img_mat = self.b_figures.get('bezie01').create_point(None, None, x, y, True, self.img_mat)
+        if event == cv2.EVENT_MOUSEMOVE:
+            cur_x, cur_y = x, y
             self.img_mat = self.b_figures.get('bezie01').show_line_feature(None, None, x, y, True, self.img_mat)
-            # if first_x is None and first_y is None:
-            #     first_x, first_y = x, y
-            # else:
-            #     second_x, second_y = first_x, first_y
-            #     first_x, first_y = None, None
-            # self.img_mat = self.b_figures.get('bezie01').draw_line(bx1, by1, bx2, by2)
-            # print(x, y)
-        # if event == cv2.EVENT_MOUSEMOVE:
-            # cur_x, cur_y = x, y
-            # print(f'LB_DOWN x - {x}, y - {y}, cur_x - {cur_x}, cur_y - {cur_y}')
-            # if cur_x != x or cur_y != y:
-            #     print(x, y)
-            # bx2, by2 = x, y
-            # self.img_mat = self.b_figures.get('bezie01').draw_line(bx1, by1, bx2, by2)
-            # self.img_mat = self.b_figures.get('bezie01').show_line(None, None, bx2, by2,True,self.img_mat)
-            # self.img_mat = self.b_figures.get('bezie01').show_line_feature(None, None, x, y, True, self.img_mat)
-            # self.img_mat = self.b_figures.get('bezie01').draw_line(bx1, by1, bx2, by2)
-            # bx1, by1 = x, y
-            # print(self.img_mat[0],' ',self.img_mat[1])
-            # self.show_image()
-        # if event == cv2.EVENT_MOUSEMOVE:
-        #     print(f'LB_UP x - {x}, y - {y}, cur_x - {cur_x}, cur_y - {cur_y}')
-        #     # while cur_x != x or cur_y != y:
-        #     #     print(f'LB_UP x - {x}, y - {y}, cur_x - {cur_x}, cur_y - {cur_y}')
-        #         # cur_x, cur_y = x , y
 
     def create_figure(self, name):
         self.b_figures[name] = BFigureWorker(name=name, img_path=self.img_path, source_mat=self.img_mat,
@@ -147,36 +120,7 @@ class BFigureWorker:
     def insert_local_cor(self, x, y):
         self.loc_x, self.loc_y = x, y
 
-    # def show_line_feature(self, x1, y1, x2, y2, n1, n2):
-    #     global first_x, first_y
-    #     if first_x is not None and first_y is not None:
-    #         self.x1_f, self.y1_f = first_x, first_y
-    #         self.ctx.set_source_rgb(0, 0, 255)
-    #         self.ctx.set_line_width(1)
-    #         self.ctx.move_to(self.x1_f, self.y1_f)
-    #         print(f'if {self.x1_f} {self.y1_f}')
-    #         self.ctx.stroke()
-    #         self.f_surface = copy.deepcopy(self.surface)
-    #         first_x, first_y = None, None
-    #     elif second_x is not None and second_y is not None:
-    #         self.surface = self.f_surface
-    #         self.ctx.set_source_rgb(0, 0, 255)
-    #         self.ctx.set_line_width(1)
-    #         # self.ctx.move_to(self.x1_f, self.y1_f)
-    #         self.ctx.line_to(second_x, second_y)
-    #         print(f'else {self.x1_f} {self.y1_f} {x2} {y2}')
-    #         self.ctx.stroke()
-    #     else:
-    #         self.surface = self.f_surface
-    #         self.ctx.set_source_rgb(0, 0, 255)
-    #         self.ctx.set_line_width(1)
-    #         self.ctx.move_to(self.x1_f, self.y1_f)
-    #         self.ctx.line_to(x2, y2)
-    #         print(f'else {self.x1_f} {self.y1_f} {x2} {y2}')
-    #         self.ctx.stroke()
-    #     return self.create_mat_from_buf(self.surface.get_data())
-
-    def show_line_feature(self, x1, y1, x2, y2, n1, n2):
+    def create_point(self, x1, y1, x2, y2, n1, n2):
         if first_x is not None and first_y is not None:
             self.x1_f, self.y1_f = first_x, first_y
             self.ctx.set_source_rgb(0, 0, 255)
@@ -187,19 +131,20 @@ class BFigureWorker:
             self.draw_point(self.x1_f, self.y1_f)
         return self.create_mat_from_buf(self.surface.get_data())
 
-    def show_line(self, x1, y1, x2, y2, vall, data):
-        if first_x is not None and first_x != 0:
-            # self.surface = cairo.ImageSurface.create_from_png(self.img_path)
-            self.ctx = cairo.Context(self.surface)
+    def show_line_feature(self, x1, y1, x2, y2, n1, source_mat):
+        data = source_mat
+        print('source_mat')
+        if first_x is not None and first_y is not None:
+            self.surface = cairo.ImageSurface.create_for_data()
+            self.x1_f, self.y1_f = first_x, first_y
             self.ctx.set_source_rgb(0, 0, 255)
             self.ctx.set_line_width(1)
-            self.ctx.move_to(first_x, first_y)
-            # self.ctx.line_to(x1 + 10, y1 + 10)
+            self.ctx.move_to(self.x1_f, self.y1_f)
             self.ctx.line_to(x2, y2)
-            if vall:
-                self.ctx.stroke()
-            self.loc_x, self.loc_y = x2, y2
-        return self.create_mat_from_buf(self.surface.get_data())
+            self.ctx.stroke()
+            print('not_source_mat')
+            data = self.create_mat_from_buf(self.surface.get_data())
+        return data
 
     def commit_line(self, x1, y1, x2, y2):
         pass

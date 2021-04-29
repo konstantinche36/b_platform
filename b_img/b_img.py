@@ -17,13 +17,23 @@ IMG_HEIGHT = 0
 IMG_WIDTH = 0
 CYAN = (0, 255, 255)
 RED = (255, 0, 0)
+IS_EDIT_MODE = None
 
 # sys.setrecursionlimit(10 ** 9)
 bx1, by1, bx2, by2 = (None, None, None, None)
 cur_x, cur_y = 0, 0
 first_x, first_y = None, None
 second_x, second_y = None, None
-l1, l2 = None, None
+l2 = None
+
+MENU_SELECT_COLOR = (50, 185, 100)
+MENU_NOT_SELECT_COLOR = (150, 150, 150)
+
+
+def add_menu_items(mat):
+    cv2.putText(mat, 'Mode:', (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1)
+    cv2.putText(mat, 'selection', (70, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, MENU_SELECT_COLOR, 1)
+    cv2.putText(mat, 'edition', (70, 45), cv2.FONT_HERSHEY_SIMPLEX, 0.5, MENU_NOT_SELECT_COLOR, 1)
 
 
 class BImage:
@@ -39,12 +49,11 @@ class BImage:
 
 class BImageWorker:
     def __init__(self, image=None):
-        global l1, l2
+        global l2
         if image is None:
             image = BImage()
         t_surface = cairo.ImageSurface.create_from_png(image.get_image_path())
         arr = np.ndarray(shape=(1200, 900, 4), dtype=np.uint8, buffer=t_surface.get_data())
-        l1 = arr
         l2 = arr.copy()
         self.img_path = image.get_image_path()
         self.img_mat = arr
@@ -69,25 +78,40 @@ class BImageWorker:
         cv2.imwrite(self.img_path, self.img_mat, [cv2.IMWRITE_PNG_COMPRESSION, 9])
 
     def show_image(self):
+        global IS_EDIT_MODE
+        exit_app = True
         cv2.setMouseCallback(WINDOW_NAME, self.click_event)
-        # cv2.imshow(WINDOW_NAME, self.img_mat)
-        while (1):
+        while exit_app:
+            add_menu_items(self.img_mat)
+            cv2.imshow(WINDOW_NAME, self.img_mat)
+            key = cv2.waitKey(1)
+            if key == ord('s'):
+                IS_EDIT_MODE = True
+            elif key == 27:
+                IS_EDIT_MODE = False
+                self.img_mat = l2
+            elif key == ord('q'):
+                break
+        cv2.destroyAllWindows()
+
+    def show_image2(self):
+        cv2.setMouseCallback(WINDOW_NAME, self.click_event)
+        while 1:
+            add_menu_items(self.img_mat)
             cv2.imshow(WINDOW_NAME, self.img_mat)
             if cv2.waitKey(20) & 0xFF == 27:
                 break
         cv2.destroyAllWindows()
 
     def click_event(self, event, x, y, flags, params):
-        global bx1, by1, bx2, by2, cur_x, cur_y, first_x, first_y, second_x, second_y
-        d = None
-        if event == cv2.EVENT_LBUTTONDOWN:
-            first_x, first_y = x, y
-            self.img_mat = self.b_figures.get('bezie01').insert_point(x, y, self.img_mat)
-            # self.img_mat = self.b_figures.get('bezie01').create_point(None, None, x, y, True, self.img_mat)
-            # np.copyto(d,self.b_figures.get('bezie01').create_point(None, None, x, y, True, self.img_mat))
-        if event == cv2.EVENT_MOUSEMOVE:
-            # cur_x, cur_y = x, y
-            self.img_mat = self.b_figures.get('bezie01').show_points(x, y, self.img_mat)
+        if IS_EDIT_MODE:
+            global bx1, by1, bx2, by2, cur_x, cur_y, first_x, first_y, second_x, second_y, l2
+            if event == cv2.EVENT_LBUTTONDOWN:
+                first_x, first_y = x, y
+                self.img_mat = self.b_figures.get('bezie01').insert_point(x, y, self.img_mat)
+                l2 = self.img_mat
+            if event == cv2.EVENT_MOUSEMOVE:
+                self.img_mat = self.b_figures.get('bezie01').show_points(x, y, self.img_mat)
 
     def create_figure(self, name):
         self.b_figures[name] = BFigureWorker(name=name, img_path=self.img_path, source_mat=self.img_mat,
@@ -149,11 +173,12 @@ class BFigureWorker:
             self.second_fig_x_point, self.second_fig_y_point = None, None
         return self.create_mat_from_buf(self.surface.get_data())
 
+    # def get_last_finish_point_mat(self):
+    #     return l2
+
     def show_points(self, x, y, mat):
-        self.surface = cairo.ImageSurface.create_for_data(np.copy(l2), cairo.FORMAT_ARGB32, self.mat_width, self.mat_height)
-        # self.surface = cairo.ImageSurface.create_for_data(l2, cairo.FORMAT_ARGB32, self.mat_width, self.mat_height)
-        # self.surface = cairo.ImageSurface.create_from_png(self.img_path)
-        print('p1')
+        self.surface = cairo.ImageSurface.create_for_data(np.copy(l2), cairo.FORMAT_ARGB32, self.mat_width,
+                                                          self.mat_height)
         self.ctx = cairo.Context(self.surface)
         if self.first_fig_x_point is not None and self.first_fig_y_point is not None:
             self.build_line(self.first_fig_x_point, self.first_fig_y_point, x, y)
@@ -233,17 +258,5 @@ class BFigureWorker:
 
 
 if __name__ == '__main__':
-    # b_image_worker = BImageWorker()
-    # b_image_worker.create_figure('bezie01')
-    # b_image_worker.create_figure('bezie02')
-    # print(cv2.imread(DEF_PATH).shape)
-    # b_image_worker.get_str_of_figures()
-    a = np.matrix('1 2; 3 4')
-    b = a.copy()
-
-    bb = np.array_equal(a,b)
-    print(f'is equals {bb} --- {b}  -- {a}')
-    b[0] = 0
-    cc = np.array_equal(a, b)
-    print(f'is equals {cc} --- {b}  -- {a}')
-
+    print(f's button = {ord("s")}')
+    print(f's button = {ord("e")}')

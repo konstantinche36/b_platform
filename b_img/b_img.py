@@ -65,6 +65,9 @@ class BImageWorker:
         cv2.namedWindow(WINDOW_NAME)
         cv2.moveWindow(WINDOW_NAME, WINDOW_POSITION[0], WINDOW_POSITION[1])
 
+    def set_current_figure(self, b_figure):
+        return self.current_figure
+
     def resize_image_mat(self, scale_percent=100):
         scale_percent = scale_percent  # percent of original size
         width = int(self.img_mat.shape[1] * scale_percent / 100)

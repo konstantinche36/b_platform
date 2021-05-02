@@ -101,7 +101,7 @@ class BMatBD:
         self.mats = mats
 
     def get_mats(self):
-        self.mats
+        return self.mats
 
 
 class BAreaBD:
@@ -130,20 +130,13 @@ class BLayer(BObj):
 
 
 class BWindowShower:
-    def __init__(self, mat, window_name='Test window'):
+    def __init__(self, window_name='Test window'):
         self.window_name = window_name
-        self.mat = mat
 
-    def set_mat(self, mat):
-        self.mat = mat
-
-    def get_mat(self):
-        return self.mat
-
-    def show_window(self):
+    def show_window(self, mat):
         is_show = True
         while is_show:
-            cv2.imshow(self.window_name, self.mat)
+            cv2.imshow(self.window_name, mat)
             key = cv2.waitKey(3)
             if key == 27:
                 break

@@ -1,14 +1,16 @@
-from base_objs.b_obj import BWindowShower, BMatBD, BFigure
+from base_objs.b_obj import BFigure, BFigureWorker, BArea, BAreaWorker, BWindowWorker, BMatBD
 
 
 class BPlatform:
-    def __init__(self, windows_shower: BWindowShower, b_mat_bd: BMatBD, name='Default_platform_name'):
+    def __init__(self, windows_worker: BWindowWorker, b_area: BArea, b_area_worker: BAreaWorker,
+                 name='Default_platform_name'):
         self.name = name
-        self.b_mat_bd = b_mat_bd
-        self.windows_shower = windows_shower
+        self.windows_worker = windows_worker
+        self.b_area = b_area
+        self.b_area_worker = b_area_worker
 
     def show(self):
-        self.windows_shower.show_window(self.b_mat_bd.get_mats()[0])
+        self.windows_worker.show_window(self.b_area)
 
-    def draw(self,b_figure: BFigure):
+    def draw(self, b_figure: BFigure):
         pass

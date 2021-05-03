@@ -1,6 +1,7 @@
 import cairo
 import numpy as np
 import cv2
+from numpy import ndarray
 
 
 def generate_mat_from_image(image_path=None):
@@ -85,14 +86,52 @@ class BFiguresBD:
         pass
 
 
+class BLayer(BObj):
+    B_LAYER_NAME_PART = 'LAYER_'
+
+    def __init__(self, name, mat: ndarray, mats: [] = None):
+        super().__init__(BLayer.B_LAYER_NAME_PART + name)
+        self.mat = mat
+        self.mats = mats
+        self.width = mat.shape[1]
+        self.height = mat.shape[0]
+
+    def get_mat(self):
+        return self.mat
+
+    def get_width(self):
+        return self.width
+
+    def get_height(self):
+        return self.height
+
+
+class BArea(BObj):
+    B_AREA_NAME_PART = 'AREA_'
+
+    def __init__(self, name='Area01', layers: [BLayer] = None):
+        super().__init__(BArea.B_AREA_NAME_PART + name)
+        self.layers = layers
+
+    def get_mat(self):
+        return self.layers
+
+
 class BAreaWorker(BObj):
     B_AREA_WORKER_NAME_PART = 'AREA_WORKER_'
 
-    def __init__(self, name, areas_bd=None):
+    def __init__(self, name, cur_b_area: BArea = None):
         super().__init__(BAreaWorker.B_AREA_WORKER_NAME_PART + name)
-        self.areas_bd = areas_bd
+        self.cur_b_area = cur_b_area
 
-    def get_mat(self):
+    def set_current_area(self, b_area: BArea):
+        self.cur_b_area = b_area
+
+    def get_current_area(self):
+        return self.cur_b_area
+    
+
+    def get_mat(self, b_area: BArea):
         return
 
 
@@ -109,27 +148,7 @@ class BAreaBD:
         self.areas = areas
 
 
-class BArea(BObj):
-    B_AREA_NAME_PART = 'AREA_'
-
-    def __init__(self, name='Area01', image_path=None):
-        super().__init__(BArea.B_AREA_NAME_PART + name)
-        self.mat = generate_mat_from_image(image_path)
-        self.width = self.mat.shape[1]
-        self.height = self.mat.shape[0]
-
-    def get_mat(self):
-        return self.mat
-
-
-class BLayer(BObj):
-    B_LAYER_NAME_PART = 'LAYER_'
-
-    def __init__(self, name):
-        super().__init__(BLayer.B_LAYER_NAME_PART + name)
-
-
-class BWindowShower:
+class BWindowWorker:
     def __init__(self, window_name='Test window'):
         self.window_name = window_name
 

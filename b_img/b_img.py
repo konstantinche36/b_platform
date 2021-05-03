@@ -97,17 +97,6 @@ class BImageWorker:
                 break
         cv2.destroyAllWindows()
 
-
-    #
-    # def show_image2(self):
-    #     cv2.setMouseCallback(WINDOW_NAME, self.click_event)
-    #     while 1:
-    #         add_menu_items(self.img_mat)
-    #         cv2.imshow(WINDOW_NAME, self.img_mat)
-    #         if cv2.waitKey(20) & 0xFF == 27:
-    #             break
-    #     cv2.destroyAllWindows()
-
     def click_event(self, event, x, y, flags, params):
         if IS_EDIT_MODE:
             global bx1, by1, bx2, by2, cur_x, cur_y, first_x, first_y, second_x, second_y, l2

@@ -1,4 +1,4 @@
-from base_objs.b_obj import generate_mat_from_image, BWindowWorker, BArea, BLayer
+from base_objs.b_obj import generate_mat_from_image, BWindowWorker,BAreaWorker,BFigureWorker, BArea, BLayer
 from base_objs.b_platform import BPlatform
 
 if __name__ == '__main__':
@@ -7,5 +7,5 @@ if __name__ == '__main__':
     mat = generate_mat_from_image(path)
     print(mat.shape)
     b_platform = BPlatform(BWindowWorker('Base Window 1'), BArea(layers=[BLayer(name='layer1', mat=mat)]),
-                           b_area_worker=None)
+                           b_area_worker=BAreaWorker('First'), b_figure_worker=BFigureWorker('F1'))
     b_platform.show()

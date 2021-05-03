@@ -2,6 +2,7 @@ import cairo
 import numpy as np
 import cv2
 from numpy import ndarray
+from itertools import count
 
 
 # WINDOW_NAME = 'Window01'
@@ -14,10 +15,14 @@ def generate_mat_from_image(image_path=None):
 
 
 class BObj:
+    _ids = count(0)
+
     def __init__(self, name=None):
+        self.id = next(self._ids)
         if name is None:
-            self.name = 'Default layer'
-        self.name = name
+            self.name = 'def_name_' + str(self.id)
+        else:
+            self.name = name + '_' + str(self.id)
 
     def get_name(self):
         return self.name
@@ -68,14 +73,36 @@ class BFigure(BObj):
             b_points = []
         self.b_points = b_points
 
+    def add_new_point(self, x, y):
+        self.b_points.append(BPoint('tt' + self.get_name(), x, y))
+
 
 class BFigureWorker(BObj):
     B_FIGURE_WORKER_NAME_PART = 'FIGURE_WORKER_'
 
-    def __init__(self, name='Worker', figures_bd=None):
+    def __init__(self, name, figures_bd=None):
         super().__init__(BFigureWorker.B_FIGURE_WORKER_NAME_PART + name)
         self.figures_bd = figures_bd
+        self.has_current_figure = False
+        self.current_figure = None
+        self.obj_name = name
 
+    def create_new_figure(self, x, y):
+        self.current_figure = BFigure(self.obj_name, [BPoint(name=self.obj_name, x=x, y=y)])
+        self.has_current_figure = True
+        print(f'create figure is True')
+
+    def add_point(self, x, y):
+        print(f'function add_point val:{x} {y}')
+        if not self.has_current_figure:
+            self.create_new_figure(x, y)
+        else:
+            self.current_figure.add_new_point(x, y)
+
+    def print_figure(self,b_figure):
+        # print(self. )
+        # todo
+        pass
 
 class BFiguresBD:
     def __init__(self, figures=None):
@@ -135,6 +162,9 @@ class BAreaWorker(BObj):
     def get_current_area(self):
         return self.cur_b_area
 
+    def update_area(self, area: BArea):
+        pass
+
     def get_mat(self, b_area: BArea):
         return b_area.get_mat()
 
@@ -179,19 +209,7 @@ class BWindowWorker:
 
 
 if __name__ == '__main__':
-    b_point = BPoint('l1', 21, 10)
-    print(
-        f'name: {b_point.get_name()}, coords: {b_point.get_x()}X{b_point.get_y()}'
-    )
-    b_c_point = BCPoint('l1', 3, 4)
-    print(
-        f'name: {b_c_point.get_name()}, coords: {b_c_point.get_x()}X{b_c_point.get_y()},{b_c_point.get_x_c()}X{b_c_point.get_y_c()}')
-    b_figure = BFigure('f1')
-    print(b_figure.get_name())
-    # b_area = BArea('Area_01', '../resize_test_img.png')
-    # print(f'area_name:{b_area.name}, area_height_width:{b_area.height}x{b_area.width}')
-    # b_shower = BWindowShower(b_area.get_mat(), 'Win1')
-    # b_shower.show_window()
-    # # print('start __main__')
-    # # mat = generate_mat_from_image('../resize_test_img.png')
-    # # print(f'type: {type(mat)} shape: {mat.shape}')
+    for i in range(32):
+        b = BObj()
+        print(b.get_name())
+        print(b._ids)

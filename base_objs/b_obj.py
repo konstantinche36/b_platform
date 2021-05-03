@@ -4,6 +4,8 @@ import cv2
 from numpy import ndarray
 
 
+# WINDOW_NAME = 'Window01'
+
 def generate_mat_from_image(image_path=None):
     if image_path is not None:
         t_surface = cairo.ImageSurface.create_from_png(image_path)
@@ -113,8 +115,11 @@ class BArea(BObj):
         super().__init__(BArea.B_AREA_NAME_PART + name)
         self.layers = layers
 
+    def get_base_layer(self) -> BLayer:
+        return self.layers[0]
+
     def get_mat(self):
-        return self.layers
+        return self.get_base_layer().get_mat()
 
 
 class BAreaWorker(BObj):
@@ -129,10 +134,9 @@ class BAreaWorker(BObj):
 
     def get_current_area(self):
         return self.cur_b_area
-    
 
     def get_mat(self, b_area: BArea):
-        return
+        return b_area.get_mat()
 
 
 class BMatBD:
@@ -149,17 +153,29 @@ class BAreaBD:
 
 
 class BWindowWorker:
+    IS_EDIT_MODE = None
+
     def __init__(self, window_name='Test window'):
         self.window_name = window_name
 
-    def show_window(self, mat):
+    def show_window(self, click_event, window_name, mat):
         is_show = True
+        cv2.namedWindow(window_name)
+        cv2.setMouseCallback(window_name, click_event)
         while is_show:
-            cv2.imshow(self.window_name, mat)
-            key = cv2.waitKey(3)
-            if key == 27:
+            cv2.imshow(window_name, mat)
+            key = cv2.waitKey(1)
+            if key == ord('s'):
+                BWindowWorker.IS_EDIT_MODE = True
+            elif key == 27:
+                BWindowWorker.IS_EDIT_MODE = False
+                # self.img_mat = l2
+            elif key == ord('q'):
                 break
         cv2.destroyAllWindows()
+
+    def get_window_name(self):
+        return self.window_name
 
 
 if __name__ == '__main__':

@@ -97,14 +97,16 @@ class BImageWorker:
                 break
         cv2.destroyAllWindows()
 
-    def show_image2(self):
-        cv2.setMouseCallback(WINDOW_NAME, self.click_event)
-        while 1:
-            add_menu_items(self.img_mat)
-            cv2.imshow(WINDOW_NAME, self.img_mat)
-            if cv2.waitKey(20) & 0xFF == 27:
-                break
-        cv2.destroyAllWindows()
+
+    #
+    # def show_image2(self):
+    #     cv2.setMouseCallback(WINDOW_NAME, self.click_event)
+    #     while 1:
+    #         add_menu_items(self.img_mat)
+    #         cv2.imshow(WINDOW_NAME, self.img_mat)
+    #         if cv2.waitKey(20) & 0xFF == 27:
+    #             break
+    #     cv2.destroyAllWindows()
 
     def click_event(self, event, x, y, flags, params):
         if IS_EDIT_MODE:
@@ -120,6 +122,7 @@ class BImageWorker:
         self.b_figures[name] = BFigureWorker(name=name, img_path=self.img_path, source_mat=self.img_mat,
                                              mat_height=self.img_height,
                                              mat_width=self.img_width)
+    pass
 
     def get_str_of_figures(self):
         result = ''

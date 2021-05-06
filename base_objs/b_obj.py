@@ -48,6 +48,9 @@ class BPoint(BObj):
     def set_y(self, y):
         self.y = y
 
+    def __str__(self):
+        return f'x:{self.x}, y:{self.y}'
+
 
 class BCPoint(BPoint):
     B_C_POINT_NAME_PART = 'CURVE_'
@@ -63,11 +66,14 @@ class BCPoint(BPoint):
     def get_y_c(self):
         return self.y_c
 
+    def __str__(self):
+        return super(BCPoint, self).__str__() + f' x_c:{self.x_c}, y_c:{self.y_c}'
+
 
 class BFigure(BObj):
     B_FIGURE_NAME_PART = 'FIGURE_'
 
-    def __init__(self, name, b_points=None):
+    def __init__(self, name: str, b_points: [BPoint] = None):
         super().__init__(BFigure.B_FIGURE_NAME_PART + name)
         if b_points is None:
             b_points = []
@@ -75,6 +81,12 @@ class BFigure(BObj):
 
     def add_new_point(self, x, y):
         self.b_points.append(BPoint('tt' + self.get_name(), x, y))
+
+    def get_points(self):
+        return self.b_points
+
+    def __str__(self):
+        return ', '.join(str(x) for x in self.b_points)
 
 
 class BFigureWorker(BObj):
@@ -84,7 +96,7 @@ class BFigureWorker(BObj):
         super().__init__(BFigureWorker.B_FIGURE_WORKER_NAME_PART + name)
         self.figures_bd = figures_bd
         self.has_current_figure = False
-        self.current_figure = None
+        self.current_figure: BFigure = None
         self.obj_name = name
 
     def create_new_figure(self, x, y):
@@ -99,10 +111,14 @@ class BFigureWorker(BObj):
         else:
             self.current_figure.add_new_point(x, y)
 
-    def print_figure(self,b_figure):
-        # print(self. )
-        # todo
-        pass
+    def get_figure(self):
+        return self.current_figure
+
+    def print_figure(self, b_figure):
+        print(self.current_figure.get_points())
+        # # todo
+        # pass
+
 
 class BFiguresBD:
     def __init__(self, figures=None):
@@ -209,7 +225,9 @@ class BWindowWorker:
 
 
 if __name__ == '__main__':
-    for i in range(32):
-        b = BObj()
-        print(b.get_name())
-        print(b._ids)
+    b_f = BFigure('l1', [BPoint('p1', 1, 2), BPoint('p2', 3, 2)])
+    # print(type(b_f.get_points()))
+    print(b_f)
+
+    b_c_f = BFigure('l1', [BCPoint('p1', 23, 45, 4, 3)])
+    print(b_c_f)

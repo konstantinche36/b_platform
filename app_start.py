@@ -8,4 +8,4 @@ if __name__ == '__main__':
     print(mat.shape)
     b_platform = BPlatform(BWindowWorker('Base Window 1'), BArea(layers=[BLayer(name='layer1', mat=mat)]),
                            b_area_worker=BAreaWorker('First'), b_figure_worker=BFigureWorker('F1'))
-    b_platform.show()
+    b_platform.show_window('m1')

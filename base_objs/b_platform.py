@@ -1,5 +1,6 @@
 import cv2
-from base_objs.b_obj import BFigure, BFigureWorker, BArea, BAreaWorker, BWindowWorker, BMatBD
+import numpy as np
+from base_objs.b_obj import BFigure, BFigureWorker, BArea, BAreaWorker, BWindowWorker, BMatBD, BAreaDrawer
 
 
 class BPlatform:
@@ -10,16 +11,31 @@ class BPlatform:
         self.b_area = b_area
         self.b_area_worker = b_area_worker
         self.b_figure_worker = b_figure_worker
+        self.b_area_drawer = BAreaDrawer()
+        self.source_mat = self.b_area.get_mat()
+        self.temp_mat = np.copy(self.source_mat)
 
     def click_event_for_b_window(self, event, x, y, flags, params=None):
         if BWindowWorker.IS_EDIT_MODE:
             if event == cv2.EVENT_LBUTTONDOWN:
-                print(f'left_button_cor: {x, y}')
                 self.b_figure_worker.add_point(x, y)
-                print(self.b_figure_worker.get_figure())
-                self.b_area_worker.update_area(area=self.b_area)
+                self.source_mat = self.b_area_drawer.draw_line_and_point(x, y, self.source_mat)
+                self.temp_mat = self.source_mat
             if event == cv2.EVENT_MOUSEMOVE:
-                print(f'mouse move: {x, y}')
+                self.source_mat = self.b_area_drawer.show_line(x, y, self.temp_mat)
 
-    def show(self):
-        self.windows_worker.show_window(self.click_event_for_b_window, self.b_area.get_name(), self.b_area.get_mat())
+    def show_window(self, window_name):
+        is_show = True
+        cv2.namedWindow(window_name)
+        cv2.setMouseCallback(window_name, self.click_event_for_b_window)
+        while is_show:
+            cv2.imshow(window_name, self.source_mat)
+            key = cv2.waitKey(1)
+            if key == ord('s'):
+                BWindowWorker.IS_EDIT_MODE = True
+            elif key == 27:
+                BWindowWorker.IS_EDIT_MODE = False
+                # self.img_mat = l2
+            elif key == ord('q'):
+                break
+        cv2.destroyAllWindows()

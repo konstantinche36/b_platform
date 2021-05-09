@@ -3,6 +3,7 @@ import numpy as np
 import cv2
 from numpy import ndarray
 from itertools import count
+import math
 
 
 # WINDOW_NAME = 'Window01'
@@ -144,6 +145,9 @@ class BLayer(BObj):
     def get_mat(self):
         return self.mat
 
+    def set_mat(self, mat):
+        self.mat = mat
+
     def get_width(self):
         return self.width
 
@@ -164,6 +168,9 @@ class BArea(BObj):
     def get_mat(self):
         return self.get_base_layer().get_mat()
 
+    def set_mat(self, mat):
+        return self.get_base_layer().set_mat(mat)
+
 
 class BAreaWorker(BObj):
     B_AREA_WORKER_NAME_PART = 'AREA_WORKER_'
@@ -178,11 +185,64 @@ class BAreaWorker(BObj):
     def get_current_area(self):
         return self.cur_b_area
 
-    def update_area(self, area: BArea):
+    def update_area(self, area: BArea, b_figure: BFigure):
         pass
 
     def get_mat(self, b_area: BArea):
         return b_area.get_mat()
+
+
+class BAreaDrawer(BObj):
+    def __init__(self):
+        super().__init__()
+        self.surface = None
+        self.width, self.height = 0, 0
+        self.ctx = None
+        self.save_x, self.save_y = None, None  # point for to start line
+        self.save_x2, self.save_y2 = None, None  # point for to start line
+
+    def init_b_area_drawer(self, mat):
+        self.width = mat.shape[1]
+        self.height = mat.shape[0]
+        self.surface = cairo.ImageSurface.create_for_data(mat, cairo.FORMAT_ARGB32, mat.shape[1],
+                                                          mat.shape[0])
+        self.ctx = cairo.Context(self.surface)
+
+    def show_line(self, x, y, mat):
+        self.init_b_area_drawer(np.copy(mat))
+        if self.save_x is not None and self.save_y is not None:
+            self.build_line(self.save_x, self.save_y, x, y)
+        return self.create_mat_from_buf(self.surface.get_data())
+
+    def draw_line_and_point(self, x, y, mat):
+        self.init_b_area_drawer(mat)
+        if self.save_x is not None and self.save_y is not None:
+            self.build_line(self.save_x, self.save_y, x, y)
+        self.add_point_to_sur(x, y, (0, 255, 255))
+        self.update_saved_x_y(x, y)
+        return self.create_mat_from_buf(self.surface.get_data())
+
+    def update_saved_x_y(self, x, y):
+        self.save_x, self.save_y = x, y
+
+    def add_point_to_sur(self, x, y, color):
+        self.ctx.set_source_rgb(color[0], color[1], color[2])
+        self.ctx.arc(x, y, 5, 0, 2 * math.pi)
+        self.ctx.fill()
+        self.ctx.fill_preserve()
+        print('ok')
+
+    def build_line(self, x1, y1, x2, y2):
+        self.ctx.set_source_rgb(0, 0, 255)
+        self.ctx.set_line_width(1)
+        self.ctx.move_to(x1, y1)
+        self.ctx.line_to(x2, y2)
+        self.ctx.stroke()
+
+    def create_mat_from_buf(self, buf):
+        l1 = np.ndarray(shape=(self.height, self.width, 4), dtype=np.uint8, buffer=buf)
+        print(l1.shape)
+        return l1
 
 
 class BMatBD:

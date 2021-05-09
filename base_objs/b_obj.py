@@ -260,6 +260,7 @@ class BAreaBD:
 
 class BWindowWorker:
     IS_EDIT_MODE = None
+    IS_CREATE_MODE = None
 
     def __init__(self, window_name='Test window'):
         self.window_name = window_name

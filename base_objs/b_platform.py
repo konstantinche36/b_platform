@@ -36,13 +36,12 @@ class BPlatform:
         if BWindowWorker.IS_CREATE_CURVE_FIGURE_MODE:
             print('IS_CURVE_CREATE_MODE')
             if event == cv2.EVENT_LBUTTONUP:
-                self.b_figure_worker.add_point(x, y)
-                self.source_mat = self.b_area_drawer.draw_curve_and_point(x, y, self.source_mat, self.reset_line_params)
+                # self.b_figure_worker.add_point(x, y)
+                self.source_mat = self.b_area_drawer.draw_curve_and_point(x, y, self.temp_mat, self.reset_line_params)
                 self.temp_mat = self.source_mat
                 self.reset_line_params = False
-            # if event == cv2.EVENT_MOUSEMOVE:
-            #     print(f'!!!!!!!!!!!!!! x:{x} y{y}')
-            #     self.source_mat = self.b_area_drawer.edit_curve(x, y, self.temp_mat, self.reset_line_params)
+            if event == cv2.EVENT_MOUSEMOVE:
+                self.source_mat = self.b_area_drawer.edit_curve(x, y, self.temp_mat, self.reset_line_params)
             # if event == cv2.EVENT_MOUSEMOVE:
             #     self.source_mat = self.b_area_drawer.show_line(x, y, self.temp_mat, self.reset_line_params)
             #     print('LAST')

@@ -103,6 +103,8 @@ class BFigureWorker(BObj):
     def create_new_figure(self, x, y):
         self.current_figure = BFigure(self.obj_name, [BPoint(name=self.obj_name, x=x, y=y)])
         self.has_current_figure = True
+        if self.figures_bd is None:
+            self.figures_bd = ArrayFiguresBD()
         print(f'create figure is True')
 
     def add_point(self, x, y):
@@ -114,6 +116,9 @@ class BFigureWorker(BObj):
 
     def get_figure(self):
         return self.current_figure
+
+    def get_figure_by_name(self, name: str):
+        return self.figures_bd[name]
 
     def print_figure(self, b_figure):
         print(self.current_figure.get_points())
@@ -130,6 +135,15 @@ class BFiguresBD:
 
     def delete_figure(self, figure_name):
         pass
+
+
+class ArrayFiguresBD:
+
+    def __init__(self):
+        self.figures_bd = {}
+
+    def add_figure(self, figure: BFigure):
+        self.figures_bd[figure.get_name()] = figure
 
 
 class BLayer(BObj):
@@ -193,6 +207,11 @@ class BAreaWorker(BObj):
 
 
 class BAreaDrawer(BObj):
+    base_color = (0, 0, 255)
+    other_color = (0, 255, 255)
+    base_line_width = 1
+    other_line_width = .5  # .5
+
     def __init__(self):
         super().__init__()
         self.surface = None
@@ -200,6 +219,9 @@ class BAreaDrawer(BObj):
         self.ctx = None
         self.save_x, self.save_y = None, None  # point for to start line
         self.save_x2, self.save_y2 = None, None  # point for to start line
+        self.save_curv_x1, self.save_curv_y1 = None, None  # point for curves
+        self.save_curv_x2, self.save_curv_y2 = None, None  # point for curves
+        self.x2, self.y2 = None, None  # point for to curv point2
 
     def init_b_area_drawer(self, mat):
         self.width = mat.shape[1]
@@ -208,29 +230,95 @@ class BAreaDrawer(BObj):
                                                           mat.shape[0])
         self.ctx = cairo.Context(self.surface)
 
-    def show_line(self, x, y, mat):
+    def show_line(self, x, y, mat, is_new_line):
         self.init_b_area_drawer(np.copy(mat))
-        if self.save_x is not None and self.save_y is not None:
+        if self.save_x is not None and self.save_y is not None and not is_new_line:
             self.build_line(self.save_x, self.save_y, x, y)
         return self.create_mat_from_buf(self.surface.get_data())
 
-    def draw_line_and_point(self, x, y, mat):
+    def edit_curve(self, x, y, mat, is_new_line):
+        self.init_b_area_drawer(np.copy(mat))
+        if self.save_x is not None and self.save_y is not None and not is_new_line:
+            # self.build_line(self.save_x, self.save_y, x, y)
+            self.edit_curve_line(self.save_x, self.save_y, x, y)
+        return self.create_mat_from_buf(self.surface.get_data())
+
+    def draw_line_and_point(self, x, y, mat, is_new_line):
         self.init_b_area_drawer(mat)
-        if self.save_x is not None and self.save_y is not None:
+        if self.save_x is not None and self.save_y is not None and not is_new_line:
             self.build_line(self.save_x, self.save_y, x, y)
         self.add_point_to_sur(x, y, (0, 255, 255))
         self.update_saved_x_y(x, y)
         return self.create_mat_from_buf(self.surface.get_data())
 
-    def update_saved_x_y(self, x, y):
-        self.save_x, self.save_y = x, y
+    def draw_curve_and_point(self, x, y, mat, is_new_line):
+        self.init_b_area_drawer(mat)
+        if self.save_x is None and self.save_y is None:
+            self.save_x, self.save_y = x, y
+            self.add_point_to_sur(x, y, self.base_color)
+            print('111111111111111111')
+        elif self.save_curv_x1 is None and self.save_curv_y1 is None:
+            self.save_curv_x1, self.save_curv_y1 = x, y
+            self.add_point_to_sur(x, y, self.other_color, radius=3)
+            self.add_line(self.save_x, self.save_y, x, y, self.other_color, self.other_line_width)
+            self.add_point_to_sur(self.get_parallel_x(x), self.get_parallel_y(y), self.other_color, radius=3)
+            print(x, y, self.get_parallel_x(x), self.get_parallel_y(y))
+            self.add_line(self.save_x, self.save_y, self.get_parallel_x(x), self.get_parallel_y(y), self.other_color,
+                          self.other_line_width)
+            print('333333333333333333333')
+        elif self.save_x2 is None and self.save_y2 is None:
+            self.save_x2, self.save_y2 = x, y
+            self.add_point_to_sur(x, y, self.base_color)
+        else:
+            self.add_curve(self.save_x, self.save_y, self.save_curv_x1, self.save_curv_y1,
+                           self.get_parallel_val(x, self.save_x2), self.get_parallel_val(y,
+                                                                                         self.save_y2), self.save_x2,
+                           self.save_y2)
+            self.add_point_to_sur(self.get_parallel_val(x, self.save_x2), self.get_parallel_val(y, self.save_y2), self.other_color, radius=3)
+            self.add_line(self.save_x2, self.save_y2, self.get_parallel_val(x, self.save_x2), self.get_parallel_val(y, self.save_y2),
+                          self.other_color, self.other_line_width)
+            self.add_point_to_sur(x,y, self.other_color, radius=3)
+            self.add_line(self.save_x2, self.save_y2, x,y, self.other_color,
+                          self.other_line_width)
+            self.save_x, self.save_y = self.save_x2, self.save_y2
+            self.save_curv_x1, self.save_curv_y1 = x, y
+            self.save_x2, self.save_y2 = None, None
+        return self.create_mat_from_buf(self.surface.get_data())
 
-    def add_point_to_sur(self, x, y, color):
+    def add_point_to_sur(self, x, y, color, radius=5):
         self.ctx.set_source_rgb(color[0], color[1], color[2])
-        self.ctx.arc(x, y, 5, 0, 2 * math.pi)
+        self.ctx.arc(x, y, radius, 0, 2 * math.pi)
         self.ctx.fill()
         self.ctx.fill_preserve()
         print('ok')
+
+    def update_saved_x_y(self, x, y):
+        self.save_x, self.save_y = x, y
+
+    def reset_saved_x_y(self):
+        self.save_x, self.save_y = None, None
+
+    def update_curves_saved_x_y(self, x, y):
+        self.save_curv_x1, self.save_curv_y1 = x, y
+        self.save_curv_x2, self.save_curv_y2 = x + x * (-1) + x, y + y * (-1) + y
+
+    def get_parallel_val(self, val, base):
+        return base + val * (-1) + base
+
+    def add_line(self, x1, y1, x2, y2, color, line_width):
+        self.ctx.set_source_rgb(color[0], color[1], color[2])
+        # self.ctx.set_source_rgb(color)
+        self.ctx.set_line_width(line_width)
+        self.ctx.move_to(x1, y1)
+        self.ctx.line_to(x2, y2)
+        self.ctx.stroke()
+
+    def add_curve(self, x, y, x1, y1, x2, y2, x3, y3):
+        self.ctx.set_source_rgb(0, 0, 255)
+        self.ctx.set_line_width(1)
+        self.ctx.move_to(x, y)
+        self.ctx.curve_to(x1, y1, x2, y2, x3, y3)
+        self.ctx.stroke()
 
     def build_line(self, x1, y1, x2, y2):
         self.ctx.set_source_rgb(0, 0, 255)
@@ -238,6 +326,36 @@ class BAreaDrawer(BObj):
         self.ctx.move_to(x1, y1)
         self.ctx.line_to(x2, y2)
         self.ctx.stroke()
+
+    def edit_curve_line(self, x1, y1, x2, y2):
+        self.ctx.set_source_rgb(0, 0, 255)
+        self.ctx.set_line_width(1)
+        self.ctx.move_to(x1, y1)
+        self.ctx.curve_to(x1, y1, x2, y2, x2 + 100, y2 - 100)
+        # self.ctx.line_to(x2, y2)
+        self.ctx.stroke()
+        # self.ctx.set_source_rgba(1, 0.2, 0.2, 0.6)
+        # self.ctx.set_line_width(0.7)
+        # self.ctx.move_to(x1, y1)
+        # self.ctx.line_to(x1+100, y1-100)
+        # self.ctx.move_to(x2, y2)
+        # self.ctx.line_to(x2+100, y2-100)
+        # self.ctx.stroke()
+
+    def build_curve_line(self, x1, y1, x2, y2):
+        self.ctx.set_source_rgb(0, 0, 255)
+        self.ctx.set_line_width(1)
+        self.ctx.move_to(x1, y1)
+        self.ctx.curve_to(self.save_curv_x1, self.save_curv_y1, x2, y2, self.save_curv_x2, self.save_curv_y2)
+        # self.ctx.line_to(x2, y2)
+        self.ctx.stroke()
+        # self.ctx.set_source_rgba(1, 0.2, 0.2, 0.6)
+        # self.ctx.set_line_width(0.7)
+        # self.ctx.move_to(x1, y1)
+        # self.ctx.line_to(x1+100, y1-100)
+        # self.ctx.move_to(x2, y2)
+        # self.ctx.line_to(x2+100, y2-100)
+        # self.ctx.stroke()
 
     def create_mat_from_buf(self, buf):
         l1 = np.ndarray(shape=(self.height, self.width, 4), dtype=np.uint8, buffer=buf)
@@ -261,6 +379,8 @@ class BAreaBD:
 class BWindowWorker:
     IS_EDIT_FIGURE_MODE = None
     IS_CREATE_FIGURE_MODE = None
+    IS_NEW_FIGURE = None
+    IS_CREATE_CURVE_FIGURE_MODE = None
 
     def __init__(self, window_name='Test window'):
         self.window_name = window_name

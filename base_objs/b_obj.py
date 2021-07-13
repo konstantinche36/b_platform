@@ -304,6 +304,10 @@ class BAreaDrawer(BObj):
                           self.other_line_width)
         return self.create_mat_from_buf(self.surface.get_data())
 
+    def delete_current_point(self):
+        print('Is deleted')
+        pass
+
     def add_point_to_sur(self, x, y, color, radius=5):
         self.ctx.set_source_rgb(color[0], color[1], color[2])
         self.ctx.arc(x, y, radius, 0, 2 * math.pi)

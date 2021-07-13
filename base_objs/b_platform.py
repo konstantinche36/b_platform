@@ -25,18 +25,18 @@ class BPlatform:
             print('IS_EDIT_MODE')
         if BWindowWorker.IS_CREATE_FIGURE_MODE:
             print('IS_CREATE_MODE')
-            if event == cv2.EVENT_LBUTTONDOWN:
-                self.b_figure_worker.add_point(x, y)
-                self.source_mat = self.b_area_drawer.draw_line_and_point(x, y, self.source_mat, self.reset_line_params)
-                self.temp_mat = self.source_mat
-                self.reset_line_params = False
-            if event == cv2.EVENT_MOUSEMOVE:
-                self.source_mat = self.b_area_drawer.show_line(x, y, self.temp_mat, self.reset_line_params)
-                print('LAST')
+            # if event == cv2.EVENT_LBUTTONDOWN:
+            #     self.b_figure_worker.add_point(x, y)
+            #     self.source_mat = self.b_area_drawer.draw_line_and_point(x, y, self.source_mat, self.reset_line_params)
+            #     self.temp_mat = self.source_mat
+            #     self.reset_line_params = False
+            # if event == cv2.EVENT_MOUSEMOVE:
+            #     self.source_mat = self.b_area_drawer.show_line(x, y, self.temp_mat, self.reset_line_params)
+            #     print('LAST')
         if BWindowWorker.IS_CREATE_CURVE_FIGURE_MODE:
             print('IS_CURVE_CREATE_MODE')
             if event == cv2.EVENT_LBUTTONUP:
-                # self.b_figure_worker.add_point(x, y)
+                # self.b_figure_worker.
                 self.source_mat = self.b_area_drawer.draw_curve_and_point(x, y, self.temp_mat, self.reset_line_params)
                 self.temp_mat = self.source_mat
                 self.reset_line_params = False
@@ -49,7 +49,6 @@ class BPlatform:
         image_width = self.source_mat.shape[1]
         set_image_on_center_of_window(window_name, image_width)
         cv2.setMouseCallback(window_name, self.click_event_doer)
-        font = cv2.FONT_HERSHEY_SIMPLEX
         while is_show:
             cv2.imshow(window_name, self.source_mat)
             key = cv2.waitKey(1)
@@ -58,15 +57,16 @@ class BPlatform:
                 if key == ord('c'):
                     cv2.putText(self.source_mat, 'Create mode', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 1, cv2.LINE_AA)
                     BWindowWorker.IS_CREATE_FIGURE_MODE = True
-                    print('action 1')
                 if key == ord('d'):
                     cv2.putText(self.source_mat, 'Create curve mode', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 1, cv2.LINE_AA)
                     BWindowWorker.IS_CREATE_CURVE_FIGURE_MODE = True
-                    print('action 1')
                 if key == ord('e'):
                     cv2.putText(self.source_mat, 'Edit mode', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 1, cv2.LINE_AA)
                     BWindowWorker.IS_EDIT_FIGURE_MODE = True
-                    print('action 2')
+                if key == ord('\b'):
+                    cv2.putText(self.source_mat, 'Backspace mode', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 1, cv2.LINE_AA)
+                    self.b_area_drawer.delete_current_point()
+                    BWindowWorker.IS_EDIT_FIGURE_MODE = True
                 elif key == 27:
                     BWindowWorker.IS_EDIT_FIGURE_MODE = False
                     BWindowWorker.IS_CREATE_FIGURE_MODE = False
@@ -89,6 +89,4 @@ def set_image_on_center_of_window(window_name, image_width: int):
 
 
 if __name__ == '__main__':
-    a = None
-    if a:
-        print(200)
+    print(input('Press button'))

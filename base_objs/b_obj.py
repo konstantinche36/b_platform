@@ -273,60 +273,35 @@ class BAreaDrawer(BObj):
             self.save_x, self.save_y = self.save_x2, self.save_y2
             self.save_curv_x1, self.save_curv_y1 = x, y
             self.save_x2, self.save_y2 = None, None
-            # self.save_curv_x2, self.save_curv_y2 = None, None
         return self.create_mat_from_buf(self.surface.get_data())
 
     def edit_curve(self, x, y, mat, is_new_line):
         self.init_b_area_drawer(np.copy(mat))
-        if self.save_curv_x2 is not None and self.save_curv_y2 is not None:
-            pass
-            # self.add_curve(self.save_x, self.save_y, self.save_curv_x1, self.save_curv_y1,
-            #                self.get_parallel_val(x, self.save_x2), self.get_parallel_val(y,
-            #                                                                              self.save_y2), self.save_x2,
-            #                self.save_y2)
-        elif self.save_x2 is not None and self.save_y2 is not None:
+        if self.save_x2 is not None and self.save_y2 is not None:
             self.add_line(self.save_x2, self.save_y2, x, y, self.other_color,
                           self.other_line_width)
-        elif self.save_curv_x1 is not None and self.save_curv_x1 is not None:
-            pass
+            self.add_curve(self.save_x,
+                           self.save_y,
+                           self.save_curv_x1,
+                           self.save_curv_y1,
+                           self.get_parallel_val(x, self.save_x2),
+                           self.get_parallel_val(y, self.save_y2),
+                           self.save_x2,
+                           self.save_y2
+                           )
+        elif self.save_curv_x1 is not None and self.save_curv_y1 is not None:
+            self.add_curve(self.save_x,
+                           self.save_y,
+                           self.save_curv_x1,
+                           self.save_curv_y1,
+                           x,
+                           y,
+                           x,
+                           y
+                           )
         elif self.save_x is not None and self.save_y is not None:
             self.add_line(self.save_x, self.save_y, x, y, self.other_color,
                           self.other_line_width)
-
-        return self.create_mat_from_buf(self.surface.get_data())
-
-    # self.edit_curve_line(self.save_x,
-    #                      self.save_y,
-    #                      x,
-    #                      y,
-    #                      # self.save_curv_x1,
-    #                      # self.save_curv_y1,
-    #                      x,
-    #                      y,
-    #                      # self.get_parallel_val(x, self.save_x),
-    #                      # self.get_parallel_val(y, self.save_y),
-    #                      x,
-    #                      y
-    #                      )
-
-    def edit_curve2(self, x, y, mat, is_new_line):
-        self.init_b_area_drawer(np.copy(mat))
-        # if self.save_x2 is not None and self.save_y2 is not None and not is_new_line:
-        if self.save_x is not None and self.save_y is not None:
-            self.edit_curve_line(self.save_x,
-                                 self.save_y,
-                                 x,
-                                 y,
-                                 # self.save_curv_x1,
-                                 # self.save_curv_y1,
-                                 x,
-                                 y,
-                                 # self.get_parallel_val(x, self.save_x),
-                                 # self.get_parallel_val(y, self.save_y),
-                                 x,
-                                 y
-                                 )
-            # self.edit_curve_line(self.save_x, self.save_y, x, y)
         return self.create_mat_from_buf(self.surface.get_data())
 
     def add_point_to_sur(self, x, y, color, radius=5):

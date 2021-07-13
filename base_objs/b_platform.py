@@ -42,9 +42,6 @@ class BPlatform:
                 self.reset_line_params = False
             if event == cv2.EVENT_MOUSEMOVE:
                 self.source_mat = self.b_area_drawer.edit_curve(x, y, self.temp_mat, self.reset_line_params)
-            # if event == cv2.EVENT_MOUSEMOVE:
-            #     self.source_mat = self.b_area_drawer.show_line(x, y, self.temp_mat, self.reset_line_params)
-            #     print('LAST')
 
     def show_window(self, window_name):
         is_show = True

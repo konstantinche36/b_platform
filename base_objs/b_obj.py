@@ -246,6 +246,8 @@ class BAreaDrawer(BObj):
 
     def draw_curve_and_point(self, x, y, mat, is_new_line):
         self.init_b_area_drawer(mat)
+        # if is_new_line:
+        #     self.save_x, self.save_y, self.save_x2, self.save_y2, self.save_curv_x1, self.save_curv_y1, self.save_curv_x2, self.save_curv_y2 = None, None, None, None, None, None, None, None
         if self.save_x is None and self.save_y is None:
             self.save_x, self.save_y = x, y
             self.add_point_to_sur(x, y, self.base_color)
@@ -277,6 +279,11 @@ class BAreaDrawer(BObj):
 
     def edit_curve(self, x, y, mat, is_new_line):
         self.init_b_area_drawer(np.copy(mat))
+        if is_new_line and self.save_x is not None and self.save_y is not None:
+            self.draw_curve_and_point(x, y, mat, is_new_line)
+            # self.add_line(self.save_x2, self.save_y2, x, y, self.other_color,
+            #               self.other_line_width)
+            self.save_x, self.save_y, self.save_x2, self.save_y2, self.save_curv_x1, self.save_curv_y1, self.save_curv_x2, self.save_curv_y2 = None, None, None, None, None, None, None, None
         if self.save_x2 is not None and self.save_y2 is not None:
             self.add_line(self.save_x2, self.save_y2, x, y, self.other_color,
                           self.other_line_width)

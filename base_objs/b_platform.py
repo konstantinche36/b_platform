@@ -25,14 +25,14 @@ class BPlatform:
             print('IS_EDIT_MODE')
         if BWindowWorker.IS_CREATE_FIGURE_MODE:
             print('IS_CREATE_MODE')
-            # if event == cv2.EVENT_LBUTTONDOWN:
-            #     self.b_figure_worker.add_point(x, y)
-            #     self.source_mat = self.b_area_drawer.draw_line_and_point(x, y, self.source_mat, self.reset_line_params)
-            #     self.temp_mat = self.source_mat
-            #     self.reset_line_params = False
-            # if event == cv2.EVENT_MOUSEMOVE:
-            #     self.source_mat = self.b_area_drawer.show_line(x, y, self.temp_mat, self.reset_line_params)
-            #     print('LAST')
+            if event == cv2.EVENT_LBUTTONDOWN:
+                self.b_figure_worker.add_point(x, y)
+                self.source_mat = self.b_area_drawer.draw_line_and_point(x, y, self.source_mat, self.reset_line_params)
+                self.temp_mat = self.source_mat
+                self.reset_line_params = False
+            if event == cv2.EVENT_MOUSEMOVE:
+                self.source_mat = self.b_area_drawer.show_line(x, y, self.temp_mat, self.reset_line_params)
+                print('LAST')
         if BWindowWorker.IS_CREATE_CURVE_FIGURE_MODE:
             print('IS_CURVE_CREATE_MODE')
             if event == cv2.EVENT_LBUTTONUP:

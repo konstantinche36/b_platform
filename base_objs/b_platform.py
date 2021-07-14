@@ -6,7 +6,7 @@ from base_objs.b_obj import BFigure, BFigureWorker, BArea, BAreaWorker, BWindowW
 
 class BPlatform:
     REDRAW_MENU = False
-    reset_line_params = True
+    reset_line_params = None
 
     def __init__(self, windows_worker: BWindowWorker, b_area: BArea, b_area_worker: BAreaWorker,
                  b_figure_worker: BFigureWorker, name='Default_platform_name'):

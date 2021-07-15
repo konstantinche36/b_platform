@@ -50,7 +50,7 @@ class BPoint(BObj):
         self.y = y
 
     def __str__(self):
-        return f'x:{self.x}, y:{self.y}'
+        return f'{self.name} x:{self.x}, y:{self.y}'
 
 
 class BCPoint(BPoint):
@@ -81,13 +81,34 @@ class BFigure(BObj):
         self.b_points = b_points
 
     def add_new_point(self, x, y):
-        self.b_points.append(BPoint('tt' + self.get_name(), x, y))
+        self.b_points.append(BPoint('tt_' + self.get_name(), x, y))
 
     def get_points(self):
         return self.b_points
 
     def __str__(self):
-        return ', '.join(str(x) for x in self.b_points)
+        return f'{self.name}: \n'+'\t'+'\n\t'.join(str(x) for x in self.b_points)
+
+    def get_figure_name(self):
+        return self.name
+
+
+class ArrayBD:
+
+    def __init__(self):
+        self.figures_bd = {}
+
+    def add_item(self, figure: BFigure):
+        print(figure.get_name(), '!!!!!!!!!!!!!!!!!!!!!!!')
+        self.figures_bd[figure.get_name()] = figure
+
+    def get_item(self, figure_name: str):
+        # print(self.figures_bd)
+        return self.figures_bd[figure_name]
+        # self.figures_bd[figure.get_name()] = figure
+
+    def print_bd_values(self):
+        return list(self.figures_bd.keys())
 
 
 class BFigureWorker(BObj):
@@ -95,30 +116,42 @@ class BFigureWorker(BObj):
 
     def __init__(self, name, figures_bd=None):
         super().__init__(BFigureWorker.B_FIGURE_WORKER_NAME_PART + name)
-        self.figures_bd = figures_bd
+        self.figures_bd = ArrayBD()
         self.has_current_figure = False
         self.current_figure: BFigure = None
         self.obj_name = name
 
-    def create_new_figure(self, x, y):
-        self.current_figure = BFigure(self.obj_name, [BPoint(name=self.obj_name, x=x, y=y)])
-        self.has_current_figure = True
-        if self.figures_bd is None:
-            self.figures_bd = ArrayFiguresBD()
+    def create_figure(self, figure_name: str):
+        self.current_figure = BFigure(figure_name, None)
         print(f'create figure is True')
+
+    def get_list_figures_name(self):
+        return self.figures_bd.print_bd_values()
+
+    def save_current_figure_to_bd(self):
+        self.figures_bd.add_item(self.current_figure)
+
+    # def create_new_figure2(self, x, y):
+    #     self.current_figure = BFigure(self.obj_name, [BPoint(name=self.obj_name, x=x, y=y)])
+    #     self.has_current_figure = True
+    #     if self.figures_bd is None:
+    #         self.figures_bd = ArrayFiguresBD()
+    #     print(f'create figure is True')
 
     def add_point(self, x, y):
         print(f'function add_point val:{x} {y}')
-        if not self.has_current_figure:
-            self.create_new_figure(x, y)
-        else:
-            self.current_figure.add_new_point(x, y)
+        self.current_figure.add_new_point(x, y)
+        # if not self.has_current_figure:
+        #     self.create_new_figure(self.current_figure.get_figure_name(), x, y)
+        # else:
+        #     self.current_figure.add_new_point(x, y)
 
     def get_figure(self):
         return self.current_figure
 
-    def get_figure_by_name(self, name: str):
-        return self.figures_bd[name]
+    def get_figure_by_name(self, name: str) -> BFigure:
+        # return ''
+        return self.figures_bd.get_item(name)
 
     def print_figure(self, b_figure):
         print(self.current_figure.get_points())
@@ -126,24 +159,15 @@ class BFigureWorker(BObj):
         # pass
 
 
-class BFiguresBD:
-    def __init__(self, figures=None):
-        self.figures = figures
-
-    def add_figure(self, figure):
-        self.figures.append(figure)
-
-    def delete_figure(self, figure_name):
-        pass
-
-
-class ArrayFiguresBD:
-
-    def __init__(self):
-        self.figures_bd = {}
-
-    def add_figure(self, figure: BFigure):
-        self.figures_bd[figure.get_name()] = figure
+# class BFiguresBD:
+#     def __init__(self, figures=None):
+#         self.figures = figures
+#
+#     def add_figure(self, figure):
+#         self.figures.append(figure)
+#
+#     def delete_figure(self, figure_name):
+#         pass
 
 
 class BLayer(BObj):

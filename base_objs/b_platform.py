@@ -35,13 +35,13 @@ class BPlatform:
                 print('LAST')
         if BWindowWorker.IS_CREATE_CURVE_FIGURE_MODE:
             print('IS_CURVE_CREATE_MODE')
-            if event == cv2.EVENT_LBUTTONUP:
-                # self.b_figure_worker.
-                self.source_mat = self.b_area_drawer.draw_curve_and_point(x, y, self.temp_mat, self.reset_line_params)
-                self.temp_mat = self.source_mat
-                self.reset_line_params = False
-            if event == cv2.EVENT_MOUSEMOVE:
-                self.source_mat = self.b_area_drawer.edit_curve(x, y, self.temp_mat, self.reset_line_params)
+            # if event == cv2.EVENT_LBUTTONUP:
+            #     # self.b_figure_worker.
+            #     self.source_mat = self.b_area_drawer.draw_curve_and_point(x, y, self.temp_mat, self.reset_line_params)
+            #     self.temp_mat = self.source_mat
+            #     self.reset_line_params = False
+            # if event == cv2.EVENT_MOUSEMOVE:
+            #     self.source_mat = self.b_area_drawer.edit_curve(x, y, self.temp_mat, self.reset_line_params)
 
     def show_window(self, window_name):
         is_show = True
@@ -55,6 +55,9 @@ class BPlatform:
             if key != -1:
                 print('get_event')
                 if key == ord('c'):
+                    self.b_figure_worker.create_figure('test_figure')
+                    self.b_figure_worker.save_current_figure_to_bd()
+                    print('figure is create')
                     cv2.putText(self.source_mat, 'Create mode', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 1, cv2.LINE_AA)
                     BWindowWorker.IS_CREATE_FIGURE_MODE = True
                 if key == ord('d'):
@@ -68,10 +71,11 @@ class BPlatform:
                     self.b_area_drawer.delete_current_point()
                     BWindowWorker.IS_EDIT_FIGURE_MODE = True
                 elif key == 27:
+                    for figure_name in self.b_figure_worker.get_list_figures_name():
+                        print(self.b_figure_worker.get_figure_by_name(figure_name))
                     BWindowWorker.IS_EDIT_FIGURE_MODE = False
                     BWindowWorker.IS_CREATE_FIGURE_MODE = False
                     BWindowWorker.IS_NEW_FIGURE = True
-                    # self.mark_create_figure_is_true = False
                     print('ESC')
                     self.source_mat = self.temp_mat
                     self.reset_line_params = True

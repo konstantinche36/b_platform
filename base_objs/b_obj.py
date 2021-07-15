@@ -87,10 +87,13 @@ class BFigure(BObj):
         return self.b_points
 
     def __str__(self):
-        return f'{self.name}: \n'+'\t'+'\n\t'.join(str(x) for x in self.b_points)
+        return f'{self.name}: \n' + '\t' + '\n\t'.join(str(x) for x in self.b_points)
 
     def get_figure_name(self):
         return self.name
+
+    def remove_last_point(self):
+        self.b_points.pop(len(self.b_points) - 1)
 
 
 class ArrayBD:
@@ -121,6 +124,13 @@ class BFigureWorker(BObj):
         self.current_figure: BFigure = None
         self.obj_name = name
 
+    def remove_last_figure_point(self):
+        self.current_figure.remove_last_point()
+
+    def get_last_point(self) -> BPoint:
+        return self.current_figure.get_points()[len(self.current_figure.get_points()) - 1]
+        # return self.figures_bd.get_item(self.get_list_figures_name()[len(self.get_list_figures_name())-1])
+
     def create_figure(self, figure_name: str):
         self.current_figure = BFigure(figure_name, None)
         print(f'create figure is True')
@@ -146,7 +156,7 @@ class BFigureWorker(BObj):
         # else:
         #     self.current_figure.add_new_point(x, y)
 
-    def get_figure(self):
+    def get_current_figure(self):
         return self.current_figure
 
     def get_figure_by_name(self, name: str) -> BFigure:
@@ -246,6 +256,10 @@ class BAreaDrawer(BObj):
         self.save_curv_x1, self.save_curv_y1 = None, None  # point for curves
         self.save_curv_x2, self.save_curv_y2 = None, None  # point for curves
         self.x2, self.y2 = None, None  # point for to curv point2
+
+    def draw_figure_from_list_coors(self, list_coors, mat):
+
+        pass
 
     def init_b_area_drawer(self, mat):
         self.width = mat.shape[1]
@@ -404,7 +418,7 @@ class BAreaDrawer(BObj):
     def create_mat_from_buf(self, buf):
         l1 = np.ndarray(shape=(self.height, self.width, 4), dtype=np.uint8, buffer=buf)
         # print(l1.shape)
-        return l1`
+        return l1
 
 
 class BMatBD:

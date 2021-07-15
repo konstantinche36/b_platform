@@ -15,9 +15,10 @@ class BPlatform:
         self.b_area = b_area
         self.b_area_worker = b_area_worker
         self.b_figure_worker = b_figure_worker
+        self.result_mat = self.b_area.get_mat()
         self.b_area_drawer = BAreaDrawer()
-        self.source_mat = self.b_area.get_mat()
-        self.temp_mat = np.copy(self.source_mat)
+        self.layer_mat = self.result_mat
+        self.temp_mat = np.copy(self.result_mat)
         self.mark_create_figure_is_true = None
 
     def click_event_doer(self, event, x, y, flags, params=None):
@@ -27,11 +28,11 @@ class BPlatform:
             # print('IS_CREATE_MODE')
             if event == cv2.EVENT_LBUTTONDOWN:
                 self.b_figure_worker.add_point(x, y)
-                self.source_mat = self.b_area_drawer.draw_line_and_point(x, y, self.source_mat, self.reset_line_params)
-                self.temp_mat = self.source_mat
+                self.result_mat = self.b_area_drawer.draw_line_and_point(x, y, self.result_mat, self.reset_line_params)
+                self.temp_mat = self.result_mat
                 self.reset_line_params = False
             if event == cv2.EVENT_MOUSEMOVE:
-                self.source_mat = self.b_area_drawer.show_line(x, y, self.temp_mat, self.reset_line_params)
+                self.result_mat = self.b_area_drawer.show_line(x, y, self.temp_mat, self.reset_line_params)
                 # print('LAST')
         if BWindowWorker.IS_CREATE_CURVE_FIGURE_MODE:
             print('IS_CURVE_CREATE_MODE')
@@ -46,11 +47,11 @@ class BPlatform:
     def show_window(self, window_name):
         is_show = True
         cv2.namedWindow(window_name)
-        image_width = self.source_mat.shape[1]
+        image_width = self.result_mat.shape[1]
         set_image_on_center_of_window(window_name, image_width)
         cv2.setMouseCallback(window_name, self.click_event_doer)
         while is_show:
-            cv2.imshow(window_name, self.source_mat)
+            cv2.imshow(window_name, self.result_mat)
             key = cv2.waitKey(1)
             if key != -1:
                 # print('get_event')
@@ -58,33 +59,43 @@ class BPlatform:
                     self.b_figure_worker.create_figure('test_figure')
                     self.b_figure_worker.save_current_figure_to_bd()
                     # print('figure is create')
-                    cv2.putText(self.source_mat, 'Create mode', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 1, cv2.LINE_AA)
+                    cv2.putText(self.result_mat, 'Create mode', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 1,
+                                cv2.LINE_AA)
                     BWindowWorker.IS_CREATE_FIGURE_MODE = True
                 if key == ord('d'):
-                    cv2.putText(self.source_mat, 'Create curve mode', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 1, cv2.LINE_AA)
+                    cv2.putText(self.result_mat, 'Create curve mode', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1,
+                                (0, 255, 0), 1, cv2.LINE_AA)
                     BWindowWorker.IS_CREATE_CURVE_FIGURE_MODE = True
                 if key == ord('e'):
-                    cv2.putText(self.source_mat, 'Edit mode', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 1, cv2.LINE_AA)
+                    cv2.putText(self.result_mat, 'Edit mode', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 1,
+                                cv2.LINE_AA)
                     BWindowWorker.IS_EDIT_FIGURE_MODE = True
                 if key == ord('\b'):
-                    cv2.putText(self.source_mat, 'Backspace mode', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 1, cv2.LINE_AA)
+                    cv2.putText(self.result_mat, 'Backspace mode', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0),
+                                1, cv2.LINE_AA)
+                    print(1, self.b_figure_worker.get_last_point())
+                    self.b_figure_worker.remove_last_figure_point()
+                    self.b_area_drawer.draw_figure_from_list_coors(
+                        self.b_figure_worker.get_current_figure().get_points(), self.layer_mat)
+                    print(2, self.b_figure_worker.get_last_point())
                     self.b_area_drawer.delete_current_point()
                     BWindowWorker.IS_EDIT_FIGURE_MODE = True
                 elif key == 27:
-                    for figure_name in self.b_figure_worker.get_list_figures_name():
-                        print(self.b_figure_worker.get_figure_by_name(figure_name))
+                    # for figure_name in self.b_figure_worker.get_list_figures_name():
+                    #     print(self.b_figure_worker.get_figure_by_name(figure_name))
+                    print(self.b_figure_worker.get_current_figure().get_points)
                     BWindowWorker.IS_EDIT_FIGURE_MODE = False
                     BWindowWorker.IS_CREATE_FIGURE_MODE = False
                     BWindowWorker.IS_NEW_FIGURE = True
                     print('ESC')
-                    self.source_mat = self.temp_mat
+                    self.result_mat = self.temp_mat
                     self.reset_line_params = True
                 elif key == ord('q'):
                     break
         cv2.destroyAllWindows()
 
     def draw_text(self, text: str):
-        cv2.putText(self.source_mat, text, (10, 450), cv2.FONT_HERSHEY_SIMPLEX, 3, (0, 255, 0), 2, cv2.LINE_AA)
+        cv2.putText(self.result_mat, text, (10, 450), cv2.FONT_HERSHEY_SIMPLEX, 3, (0, 255, 0), 2, cv2.LINE_AA)
 
 
 def set_image_on_center_of_window(window_name, image_width: int):

@@ -403,7 +403,7 @@ class BAreaDrawer(BObj):
 
     def create_mat_from_buf(self, buf):
         l1 = np.ndarray(shape=(self.height, self.width, 4), dtype=np.uint8, buffer=buf)
-        print(l1.shape)
+        # print(l1.shape)
         return l1
 
 

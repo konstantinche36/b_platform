@@ -24,7 +24,7 @@ class BPlatform:
         if BWindowWorker.IS_EDIT_FIGURE_MODE:
             print('IS_EDIT_MODE')
         if BWindowWorker.IS_CREATE_FIGURE_MODE:
-            print('IS_CREATE_MODE')
+            # print('IS_CREATE_MODE')
             if event == cv2.EVENT_LBUTTONDOWN:
                 self.b_figure_worker.add_point(x, y)
                 self.source_mat = self.b_area_drawer.draw_line_and_point(x, y, self.source_mat, self.reset_line_params)
@@ -32,7 +32,7 @@ class BPlatform:
                 self.reset_line_params = False
             if event == cv2.EVENT_MOUSEMOVE:
                 self.source_mat = self.b_area_drawer.show_line(x, y, self.temp_mat, self.reset_line_params)
-                print('LAST')
+                # print('LAST')
         if BWindowWorker.IS_CREATE_CURVE_FIGURE_MODE:
             print('IS_CURVE_CREATE_MODE')
             # if event == cv2.EVENT_LBUTTONUP:
@@ -53,11 +53,11 @@ class BPlatform:
             cv2.imshow(window_name, self.source_mat)
             key = cv2.waitKey(1)
             if key != -1:
-                print('get_event')
+                # print('get_event')
                 if key == ord('c'):
                     self.b_figure_worker.create_figure('test_figure')
                     self.b_figure_worker.save_current_figure_to_bd()
-                    print('figure is create')
+                    # print('figure is create')
                     cv2.putText(self.source_mat, 'Create mode', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 1, cv2.LINE_AA)
                     BWindowWorker.IS_CREATE_FIGURE_MODE = True
                 if key == ord('d'):

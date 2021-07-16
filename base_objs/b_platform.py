@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 from utils import utils
 from base_objs.b_obj import BFigure, BFigureWorker, BArea, BAreaWorker, BWindowWorker, BMatBD, BAreaDrawer
-
+from b_layer.b_layer_worker import BLayerWorker
 
 class BPlatform:
     REDRAW_MENU = False
@@ -20,6 +20,7 @@ class BPlatform:
         self.layer_mat = self.result_mat
         self.temp_mat = np.copy(self.result_mat)
         self.mark_create_figure_is_true = None
+        self.b_layers_worker = BLayerWorker()
 
     def click_event_doer(self, event, x, y, flags, params=None):
         if BWindowWorker.IS_EDIT_FIGURE_MODE:

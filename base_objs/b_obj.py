@@ -5,9 +5,6 @@ from numpy import ndarray
 from itertools import count
 import math
 
-
-# WINDOW_NAME = 'Window01'
-
 def generate_mat_from_image(image_path=None):
     if image_path is not None:
         t_surface = cairo.ImageSurface.create_from_png(image_path)

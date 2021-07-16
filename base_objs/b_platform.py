@@ -75,19 +75,22 @@ class BPlatform:
                                 1, cv2.LINE_AA)
                     print(1, self.b_figure_worker.get_last_point())
                     self.b_figure_worker.remove_last_figure_point()
-                    self.b_area_drawer.draw_figure_from_list_coors(
-                        self.b_figure_worker.get_current_figure().get_points(), self.layer_mat)
+                    coors = [[val.get_x(), val.get_y()] for val in self.b_figure_worker.get_current_figure().get_points()]
+                    print(coors)
+                    self.result_mat = self.b_area_drawer.draw_figure_from_list_coors(coors, self.layer_mat)
+                    self.temp_mat = self.result_mat
                     print(2, self.b_figure_worker.get_last_point())
-                    self.b_area_drawer.delete_current_point()
-                    BWindowWorker.IS_EDIT_FIGURE_MODE = True
+                    # self.b_area_drawer.delete_current_point()
+                    # BWindowWorker.IS_EDIT_FIGURE_MODE = True
                 elif key == 27:
                     # for figure_name in self.b_figure_worker.get_list_figures_name():
                     #     print(self.b_figure_worker.get_figure_by_name(figure_name))
-                    print(self.b_figure_worker.get_current_figure().get_points)
+                    # print(self.b_figure_worker.get_current_figure().get_points())
                     BWindowWorker.IS_EDIT_FIGURE_MODE = False
                     BWindowWorker.IS_CREATE_FIGURE_MODE = False
                     BWindowWorker.IS_NEW_FIGURE = True
                     print('ESC')
+                    print(self.b_figure_worker.get_current_figure().get_points())
                     self.result_mat = self.temp_mat
                     self.reset_line_params = True
                 elif key == ord('q'):
@@ -104,4 +107,7 @@ def set_image_on_center_of_window(window_name, image_width: int):
 
 
 if __name__ == '__main__':
-    print(input('Press button'))
+    # print(input('Press button'))
+    l1 = [800, 900, 100]
+    l2 = [x for x in l1 if x > 500]
+    print(l2)

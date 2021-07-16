@@ -93,7 +93,8 @@ class BFigure(BObj):
         return self.name
 
     def remove_last_point(self):
-        self.b_points.pop(len(self.b_points) - 1)
+        if len(self.b_points) > 0:
+            self.b_points.pop(len(self.b_points) - 1)
 
 
 class ArrayBD:
@@ -128,7 +129,8 @@ class BFigureWorker(BObj):
         self.current_figure.remove_last_point()
 
     def get_last_point(self) -> BPoint:
-        return self.current_figure.get_points()[len(self.current_figure.get_points()) - 1]
+        return self.current_figure.get_points()[len(self.current_figure.get_points()) - 1] if len(
+            self.current_figure.get_points()) - 1 > 0 else None
         # return self.figures_bd.get_item(self.get_list_figures_name()[len(self.get_list_figures_name())-1])
 
     def create_figure(self, figure_name: str):
@@ -258,8 +260,20 @@ class BAreaDrawer(BObj):
         self.x2, self.y2 = None, None  # point for to curv point2
 
     def draw_figure_from_list_coors(self, list_coors, mat):
-
-        pass
+        self.init_b_area_drawer(np.copy(mat))
+        # for coors_pars in reversed(list_coors):
+        x1, y1, x2, y2 = None, None, None, None
+        for coors_pars in list_coors:
+            self.add_point(coors_pars[0], coors_pars[1])
+            if x1 is not None and y1 is not None:
+                self.add_s_line(x1, y1, coors_pars[0], coors_pars[1])
+            x1, y1 = coors_pars[0], coors_pars[1]
+            # self.update_saved_x_y(coors_pars[0], coors_pars[1])
+            # self.update_saved_x_y(coors_pars[0], coors_pars[1])
+            # mat_res = self.draw_line_and_point(coors_pars[0], coors_pars[1], mat, False)
+        self.update_saved_x_y(list_coors[-1][0] if len(list_coors) > 0 else None,
+                              list_coors[-1][1] if len(list_coors) > 0 else None)
+        return self.get_result_mat()
 
     def init_b_area_drawer(self, mat):
         self.width = mat.shape[1]
@@ -280,6 +294,18 @@ class BAreaDrawer(BObj):
             self.build_line(self.save_x, self.save_y, x, y)
         self.add_point_to_sur(x, y, (0, 255, 255))
         self.update_saved_x_y(x, y)
+        return self.create_mat_from_buf(self.surface.get_data())
+
+    def init_mat(self, mat):
+        self.init_b_area_drawer(mat)
+
+    def add_point(self, x, y):
+        self.add_point_to_sur(x, y, (0, 255, 255))
+
+    def add_s_line(self, x1, y1, x2, y2):
+        self.build_line(x1, y1, x2, y2)
+
+    def get_result_mat(self):
         return self.create_mat_from_buf(self.surface.get_data())
 
     def draw_curve_and_point(self, x, y, mat, is_new_line):
@@ -464,9 +490,5 @@ class BWindowWorker:
 
 
 if __name__ == '__main__':
-    b_f = BFigure('l1', [BPoint('p1', 1, 2), BPoint('p2', 3, 2)])
-    # print(type(b_f.get_points()))
-    print(b_f)
-
-    b_c_f = BFigure('l1', [BCPoint('p1', 23, 45, 4, 3)])
-    print(b_c_f)
+    l1 = [1, 2, 3]
+    print(l1[-1])

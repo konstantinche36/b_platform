@@ -5,11 +5,11 @@ from numpy import ndarray
 from itertools import count
 import math
 
-def generate_mat_from_image(image_path=None):
-    if image_path is not None:
-        t_surface = cairo.ImageSurface.create_from_png(image_path)
-        return np.ndarray(shape=(t_surface.get_height(), t_surface.get_width(), 4), dtype=np.uint8,
-                          buffer=t_surface.get_data())
+# def generate_mat_from_image(image_path=None):
+#     if image_path is not None:
+#         t_surface = cairo.ImageSurface.create_from_png(image_path)
+#         return np.ndarray(shape=(t_surface.get_height(), t_surface.get_width(), 4), dtype=np.uint8,
+#                           buffer=t_surface.get_data())
 
 
 class BObj:
@@ -216,7 +216,7 @@ class BArea(BObj):
         return self.get_base_layer().get_mat()
 
     def set_mat(self, mat):
-        return self.get_base_layer().set_mat(mat)
+        self.get_base_layer().set_mat(mat)
 
 
 class BAreaWorker(BObj):
@@ -245,8 +245,9 @@ class BAreaDrawer(BObj):
     base_line_width = 1
     other_line_width = .5  # .5
 
-    def __init__(self):
+    def __init__(self, area_worker: BAreaWorker):
         super().__init__()
+        self.base_mat = area_worker.get_mat(area_worker.get_current_area())
         self.surface = None
         self.width, self.height = 0, 0
         self.ctx = None

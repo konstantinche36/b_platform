@@ -4,6 +4,7 @@ from utils import utils
 from base_objs.b_obj import BFigure, BFigureWorker, BArea, BAreaWorker, BWindowWorker, BMatBD, BAreaDrawer
 from b_layer.b_layer_worker import BLayerWorker
 
+
 class BPlatform:
     REDRAW_MENU = False
     reset_line_params = None
@@ -16,11 +17,11 @@ class BPlatform:
         self.b_area_worker = b_area_worker
         self.b_figure_worker = b_figure_worker
         self.result_mat = self.b_area.get_mat()
-        self.b_area_drawer = BAreaDrawer()
+        self.b_area_drawer = BAreaDrawer(self.b_area_worker)
         self.layer_mat = self.result_mat
         self.temp_mat = np.copy(self.result_mat)
         self.mark_create_figure_is_true = None
-        self.b_layers_worker = BLayerWorker()
+        # self.b_layers_worker = BLayerWorker('base_layer', )
 
     def click_event_doer(self, event, x, y, flags, params=None):
         if BWindowWorker.IS_EDIT_FIGURE_MODE:
@@ -49,7 +50,7 @@ class BPlatform:
         is_show = True
         cv2.namedWindow(window_name)
         image_width = self.result_mat.shape[1]
-        set_image_on_center_of_window(window_name, image_width)
+        locate_app_on_center_of_window(window_name, image_width)
         cv2.setMouseCallback(window_name, self.click_event_doer)
         while is_show:
             cv2.imshow(window_name, self.result_mat)
@@ -76,7 +77,8 @@ class BPlatform:
                                 1, cv2.LINE_AA)
                     print(1, self.b_figure_worker.get_last_point())
                     self.b_figure_worker.remove_last_figure_point()
-                    coors = [[val.get_x(), val.get_y()] for val in self.b_figure_worker.get_current_figure().get_points()]
+                    coors = [[val.get_x(), val.get_y()] for val in
+                             self.b_figure_worker.get_current_figure().get_points()]
                     print(coors)
                     self.result_mat = self.b_area_drawer.draw_figure_from_list_coors(coors, self.layer_mat)
                     self.temp_mat = self.result_mat
@@ -102,7 +104,7 @@ class BPlatform:
         cv2.putText(self.result_mat, text, (10, 450), cv2.FONT_HERSHEY_SIMPLEX, 3, (0, 255, 0), 2, cv2.LINE_AA)
 
 
-def set_image_on_center_of_window(window_name, image_width: int):
+def locate_app_on_center_of_window(window_name, image_width: int):
     offset_x_y = utils.get_offset(utils.get_screen_size()[0], image_width)
     cv2.moveWindow(window_name, offset_x_y[0], offset_x_y[1])
 

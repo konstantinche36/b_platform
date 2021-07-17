@@ -4,8 +4,9 @@ from b_layer.b_layer import BLayer
 
 class BLayerWorker:
 
-    def __init__(self):
+    def __init__(self, layer_name):
         self.bd = BLayerBD('default_bd')
+        self.name = layer_name
 
     def create_layer(self, name, mat):
         self.bd.add_layer(name, BLayer(name, mat))

@@ -1,5 +1,6 @@
-from base_objs.b_obj import generate_mat_from_image, BWindowWorker, BAreaWorker, BFigureWorker, BArea, BLayer
+from base_objs.b_obj import BWindowWorker, BAreaWorker, BFigureWorker, BArea, BLayer
 from base_objs.b_platform import BPlatform
+from b_mat.b_mat_worker import generate_mat_from_image
 
 if __name__ == '__main__':
     print('start!!!')

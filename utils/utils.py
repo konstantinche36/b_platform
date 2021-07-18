@@ -1,4 +1,5 @@
 import pyautogui
+import time
 
 
 def get_screen_size() -> (int, int):
@@ -18,3 +19,11 @@ def get_offset(width_screen_size: int, width_image_size: int) -> (int, int):
     if width_screen_size >= width_image_size:
         x_offset = get_center(width_screen_size) - get_center(width_image_size)
     return x_offset, y_offset
+
+
+def current_milli_time():
+    return round(time.time() * 1000)
+
+
+def get_random_name():
+    return 'test_name' + str(current_milli_time())

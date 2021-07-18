@@ -10,7 +10,7 @@ if __name__ == '__main__':
     print(mat.shape)
     print(mat[0][0])
     b_area_base = BArea(layers={'base_layer': BLayer(name='layer1', mat=mat)})
-    b_platform = BPlatform(BWindowWorker('Base Window 1'), b_area_base,
+    b_platform = BPlatform(BWindowWorker('Base Window 1'), mat, b_area_base,
                            b_area_worker=BAreaWorker('First', b_area_base), b_figure_worker=BFigureWorker('F1'))
     b_platform.show_window('m1')
     print('end!!!')

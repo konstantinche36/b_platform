@@ -1,15 +1,17 @@
 import cv2
 import numpy as np
 from utils import utils
-from base_objs.b_obj import BFigure, BFigureWorker, BArea, BAreaWorker, BWindowWorker, BMatBD, BAreaDrawer
-from b_layer.b_layer_worker import BLayerWorker
+from base_objs.b_obj import BFigure, BFigureWorker, BArea, BAreaWorker, BWindowWorker, BMatBD, BAreaDrawer, BLayerWorker
+from numpy import ndarray
+
+figure_name = utils.get_random_name()
 
 
 class BPlatform:
     REDRAW_MENU = False
     reset_line_params = None
 
-    def __init__(self, windows_worker: BWindowWorker, b_area: BArea, b_area_worker: BAreaWorker,
+    def __init__(self, windows_worker: BWindowWorker, base_mat: ndarray, b_area: BArea, b_area_worker: BAreaWorker,
                  b_figure_worker: BFigureWorker, name='Default_platform_name'):
         self.name = name
         self.windows_worker = windows_worker
@@ -21,6 +23,9 @@ class BPlatform:
         self.layer_mat = self.result_mat
         self.temp_mat = np.copy(self.result_mat)
         self.mark_create_figure_is_true = None
+        self.b_layer_worker = BLayerWorker('default_worker', base_mat)
+
+        self.cur_mat = self.result_mat
         # self.b_layers_worker = BLayerWorker('base_layer', )
 
     def click_event_doer(self, event, x, y, flags, params=None):
@@ -28,13 +33,18 @@ class BPlatform:
             print('IS_EDIT_MODE')
         if BWindowWorker.IS_CREATE_FIGURE_MODE:
             # print('IS_CREATE_MODE')
+            # print('00000000000000000000000' + str(len(self.b_layer_worker.layers)))
             if event == cv2.EVENT_LBUTTONDOWN:
                 self.b_figure_worker.add_point(x, y)
-                self.result_mat = self.b_area_drawer.draw_line_and_point(x, y, self.result_mat, self.reset_line_params)
-                #todo передать нужный mat от слоя
+                self.result_mat = self.b_area_drawer.draw_line_and_point(x, y,
+                                                                         self.b_layer_worker.get_layer(
+                                                                             figure_name).get_mat(),
+                                                                         self.reset_line_params)
+                # todo передать нужный mat от слоя
                 # self.result_mat = self.b_area_drawer.draw_line_and_point(x, y, self.b_area_worker.g self.reset_line_params)
                 self.temp_mat = self.result_mat
                 self.reset_line_params = False
+
             if event == cv2.EVENT_MOUSEMOVE:
                 self.result_mat = self.b_area_drawer.show_line(x, y, self.temp_mat, self.reset_line_params)
                 # print('LAST')
@@ -56,21 +66,27 @@ class BPlatform:
         cv2.setMouseCallback(window_name, self.click_event_doer)
         while is_show:
             # cv2.imshow(window_name, self.result_mat)
-            cv2.imshow(window_name, self.b_area_worker.get_mat_from_list_layers())
+            # cv2.imshow(window_name, self.b_area_worker.get_mat_from_list_layers())
+            # print(type(self.b_layer_worker.get_mat_from_list_layers()))
+
+            # cv2.imshow(window_name, self.cur_mat)
+            cv2.imshow(window_name, self.result_mat)
             key = cv2.waitKey(1)
             if key != -1:
                 # print('get_event')
                 if key == ord('c'):
-                    self.b_figure_worker.create_figure('test_figure')
+                    self.b_figure_worker.create_figure(figure_name)
                     self.b_figure_worker.save_current_figure_to_bd()
                     # print('figure is create')
                     cv2.putText(self.result_mat, 'Create mode', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 1,
                                 cv2.LINE_AA)
                     BWindowWorker.IS_CREATE_FIGURE_MODE = True
-                    self.b_area_worker.create_layer(self.b_figure_worker.get_current_figure().get_name(),
-                                                    # np.ndarray(shape=(1200, 900, 4)))
-                                                    np.ndarray(shape=(1200, 900, 4), dtype=np.uint8))
-                                                    # self.result_mat)
+                    self.b_layer_worker.add_layer(figure_name, self.b_layer_worker.create_layer(figure_name,np.copy(self.cur_mat)))
+                    # self.b_area_worker.create_layer(self.b_figure_worker.get_current_figure().get_name(),
+                    #                                 # np.ndarray(shape=(1200, 900, 4)))
+                    #                                 np.ndarray(shape=(1200, 900, 4), dtype=np.uint8))
+                    # self.result_mat)
+                    self.cur_mat = self.b_layer_worker.get_layer(figure_name).get_mat()
                 if key == ord('d'):
                     cv2.putText(self.result_mat, 'Create curve mode', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1,
                                 (0, 255, 0), 1, cv2.LINE_AA)
@@ -103,6 +119,7 @@ class BPlatform:
                     print(self.b_figure_worker.get_current_figure().get_points())
                     self.result_mat = self.temp_mat
                     self.reset_line_params = True
+                    self.cur_mat = self.b_layer_worker.get_mat_from_list_layers()
                 elif key == ord('q'):
                     break
         cv2.destroyAllWindows()

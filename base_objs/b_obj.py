@@ -7,26 +7,30 @@ import math
 import time
 
 
-
-
 # def generate_mat_from_image(image_path=None):
 #     if image_path is not None:
 #         t_surface = cairo.ImageSurface.create_from_png(image_path)
 #         return np.ndarray(shape=(t_surface.get_height(), t_surface.get_width(), 4), dtype=np.uint8,
 #                           buffer=t_surface.get_data())
 
+def p(val):
+    print(val)
+
+
 def current_milli_time():
     return round(time.time() * 1000)
 
+
 def simple_show_mat(mat, file_name):
     # cv2.imshow('m22', mat)
-    cv2.imwrite(file_name+str(current_milli_time())+'.png',mat)
+    cv2.imwrite(file_name + str(current_milli_time()) + '.png', mat)
     # cv2.waitKey(1000)
     # key = cv2.waitKey(1)
     # while True:
     #     if key == 27:
     #         cv2.destroyAllWindows()
     #         break
+
 
 class BObj:
     _ids = count(0)
@@ -82,6 +86,28 @@ class BCPoint(BPoint):
 
     def __str__(self):
         return super(BCPoint, self).__str__() + f' x_c:{self.x_c}, y_c:{self.y_c}'
+
+
+class BLayer(BObj):
+    B_LAYER_NAME_PART = 'LAYER_'
+
+    def __init__(self, name, mat: ndarray):
+        super().__init__(BLayer.B_LAYER_NAME_PART + name)
+        self.mat = mat
+        self.width = mat.shape[1]
+        self.height = mat.shape[0]
+
+    def get_mat(self):
+        return self.mat
+
+    def set_mat(self, mat):
+        self.mat = mat
+
+    def get_width(self):
+        return self.width
+
+    def get_height(self):
+        return self.height
 
 
 class BFigure(BObj):
@@ -194,27 +220,54 @@ class BFigureWorker(BObj):
 #     def delete_figure(self, figure_name):
 #         pass
 
+class BLayerWorker:
+    def __init__(self, name: str, base_mat: ndarray):
+        self.name = name
+        self.base_layer = BLayer('base_mat', base_mat)
+        self.layers = {'base_layer': self.base_layer}
+        self.width, self.height = base_mat.shape[0], base_mat.shape[1]
 
-class BLayer(BObj):
-    B_LAYER_NAME_PART = 'LAYER_'
+    def get_base_layer(self):
+        return self.base_layer
 
-    def __init__(self, name, mat: ndarray):
-        super().__init__(BLayer.B_LAYER_NAME_PART + name)
-        self.mat = mat
-        self.width = mat.shape[1]
-        self.height = mat.shape[0]
+    def create_layer(self, name, mat: ndarray):
+        return BLayer(name + '_mat', mat)
 
-    def get_mat(self):
-        return self.mat
+    def add_layer(self, name, layer: BLayer):
+        self.layers[name] = layer
 
-    def set_mat(self, mat):
-        self.mat = mat
+    def get_layer(self, name):
+        return self.layers[name]
 
-    def get_width(self):
-        return self.width
+    def get_mat_from_layer(self, name):
+        return self.layers[name].get_mat()
 
-    def get_height(self):
-        return self.height
+    def get_mat_from_list_layers(self):
+        result_mat = self.get_base_layer().get_mat()
+        # simple_show_mat(result_mat, 'f1')
+        # layers = list(self.base_layer.get_mat().get_layers().values())
+        # print(len(layers))
+        for layer in list(self.layers.values())[1:]:
+            result_mat = self.merge_layers(result_mat, layer.get_mat())
+        return result_mat
+
+    def merge_layers(self, background_layer, foreground_layer):
+        # print('22222222222222222222222',foreground_layer.shape)
+        rr = cv2.split(foreground_layer)[3]
+        # print(rr)
+        mask = cv2.cvtColor(cv2.GaussianBlur(rr, (3, 3), 1), cv2.COLOR_GRAY2BGR)
+        background_layer = background_layer[:, :, :3].astype(float)
+        foreground_layer = foreground_layer[:, :, :3].astype(float)
+        mask = mask.astype(float)  # / 255
+        # simple_show_mat(mask, 'f2')
+        # simple_show_mat(foreground_layer/ 255, 'f3')
+        # mask = mask.astype(float) #/ 255
+        # print('3333333333333333333',background_layer.shape, foreground_layer.shape, mask.shape)
+        background_layer = cv2.multiply(1.0 - mask, background_layer)
+        foreground_layer = cv2.multiply(mask, foreground_layer)
+        out_image = cv2.add(background_layer, foreground_layer)
+        return out_image / 255
+        # return None
 
 
 class BArea(BObj):
@@ -225,7 +278,7 @@ class BArea(BObj):
         self.layers: {str: BLayer} = layers
 
     def get_base_layer(self) -> BLayer:
-        print(type(self.layers.values()))
+        # print(type(self.layers.values()))
         return list(self.layers.values())[0]
 
     def get_base_mat(self):
@@ -237,7 +290,7 @@ class BArea(BObj):
     def get_layers(self) -> [BLayer]:
         return self.layers
 
-    def add_layer(self,name, layer):
+    def add_layer(self, name, layer):
         self.layers[name] = layer
 
 
@@ -250,7 +303,7 @@ class BAreaWorker(BObj):
 
     def create_layer(self, name, mat):
         layer = BLayer(name, mat)
-        self.cur_b_area.add_layer(name,layer)
+        self.cur_b_area.add_layer(name, layer)
 
     def set_current_area(self, b_area: BArea):
         self.cur_b_area = b_area
@@ -277,7 +330,7 @@ class BAreaWorker(BObj):
         mask = cv2.cvtColor(cv2.GaussianBlur(cv2.split(foreground_layer)[3], (3, 3), 1), cv2.COLOR_GRAY2BGR)
         background_layer = background_layer[:, :, :3].astype(float)
         foreground_layer = foreground_layer[:, :, :3].astype(float)
-        mask = mask.astype(float) #/ 255
+        mask = mask.astype(float)  # / 255
         # simple_show_mat(mask, 'f2')
         # simple_show_mat(foreground_layer/ 255, 'f3')
         # mask = mask.astype(float) #/ 255
@@ -346,7 +399,7 @@ class BAreaDrawer(BObj):
             self.build_line(self.save_x, self.save_y, x, y)
         return self.create_mat_from_buf(self.surface.get_data())
 
-    def draw_line_and_point(self, x, y, is_new_line):
+    def draw_line_and_point(self, x, y, mat, is_new_line):
         self.init_b_area_drawer(mat)
         if self.save_x is not None and self.save_y is not None and not is_new_line:
             self.build_line(self.save_x, self.save_y, x, y)
@@ -501,10 +554,10 @@ class BAreaDrawer(BObj):
 
     def create_mat_from_buf(self, buf):
         l1 = np.ndarray(shape=(self.height, self.width, 4), dtype=np.uint8, buffer=buf)
-        print('8888888888888888888888888888888888888')
+        # print('8888888888888888888888888888888888888')
         # simple_show_mat(l1)
-        simple_show_mat(l1,'ttt')
-        print(l1.shape)
+        # simple_show_mat(l1, 'ttt')
+        # print(l1.shape)
         return l1
 
 
@@ -551,9 +604,6 @@ class BWindowWorker:
 
 
 if __name__ == '__main__':
-    l1 = [1, 2, 3]
-
-    ll2 = {1: 34}
-    ll2.values()
-    for i in l1[1:]:
-        print(i)
+    im = cv2.imread('../test_img.png')
+    print(type(im))
+    p(im.shape)

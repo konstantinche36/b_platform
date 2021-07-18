@@ -16,7 +16,7 @@ class BPlatform:
         self.b_area = b_area
         self.b_area_worker = b_area_worker
         self.b_figure_worker = b_figure_worker
-        self.result_mat = self.b_area.get_mat()
+        self.result_mat = self.b_area.get_base_mat()
         self.b_area_drawer = BAreaDrawer(self.b_area_worker)
         self.layer_mat = self.result_mat
         self.temp_mat = np.copy(self.result_mat)
@@ -53,7 +53,8 @@ class BPlatform:
         locate_app_on_center_of_window(window_name, image_width)
         cv2.setMouseCallback(window_name, self.click_event_doer)
         while is_show:
-            cv2.imshow(window_name, self.result_mat)
+            # cv2.imshow(window_name, self.result_mat)
+            cv2.imshow(window_name, self.b_area_worker.get_mat_from_list_layers())
             key = cv2.waitKey(1)
             if key != -1:
                 # print('get_event')
@@ -64,6 +65,8 @@ class BPlatform:
                     cv2.putText(self.result_mat, 'Create mode', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 1,
                                 cv2.LINE_AA)
                     BWindowWorker.IS_CREATE_FIGURE_MODE = True
+                    self.b_area_worker.create_layer(self.b_figure_worker.get_current_figure().get_name(),
+                                                    self.result_mat)
                 if key == ord('d'):
                     cv2.putText(self.result_mat, 'Create curve mode', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1,
                                 (0, 255, 0), 1, cv2.LINE_AA)

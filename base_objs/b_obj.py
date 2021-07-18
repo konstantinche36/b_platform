@@ -5,6 +5,7 @@ from numpy import ndarray
 from itertools import count
 import math
 
+
 # def generate_mat_from_image(image_path=None):
 #     if image_path is not None:
 #         t_surface = cairo.ImageSurface.create_from_png(image_path)
@@ -182,10 +183,9 @@ class BFigureWorker(BObj):
 class BLayer(BObj):
     B_LAYER_NAME_PART = 'LAYER_'
 
-    def __init__(self, name, mat: ndarray, mats: [] = None):
+    def __init__(self, name, mat: ndarray):
         super().__init__(BLayer.B_LAYER_NAME_PART + name)
         self.mat = mat
-        self.mats = mats
         self.width = mat.shape[1]
         self.height = mat.shape[0]
 
@@ -205,18 +205,25 @@ class BLayer(BObj):
 class BArea(BObj):
     B_AREA_NAME_PART = 'AREA_'
 
-    def __init__(self, name='Area01', layers: [BLayer] = None):
+    def __init__(self, name='Area01', layers: {str: BLayer} = None):
         super().__init__(BArea.B_AREA_NAME_PART + name)
-        self.layers = layers
+        self.layers: {str: BLayer} = layers
 
     def get_base_layer(self) -> BLayer:
-        return self.layers[0]
+        print(type(self.layers.values()))
+        return list(self.layers.values())[0]
 
-    def get_mat(self):
+    def get_base_mat(self):
         return self.get_base_layer().get_mat()
 
-    def set_mat(self, mat):
+    def set_base_mat(self, mat):
         self.get_base_layer().set_mat(mat)
+
+    def get_layers(self) -> [BLayer]:
+        return self.layers
+
+    def add_layer(self, BLayer):
+        pass
 
 
 class BAreaWorker(BObj):
@@ -225,6 +232,10 @@ class BAreaWorker(BObj):
     def __init__(self, name, cur_b_area: BArea = None):
         super().__init__(BAreaWorker.B_AREA_WORKER_NAME_PART + name)
         self.cur_b_area = cur_b_area
+
+    def create_layer(self, name, mat):
+        layer = BLayer(name, mat)
+        self.BArea.addLayer(layer)
 
     def set_current_area(self, b_area: BArea):
         self.cur_b_area = b_area
@@ -235,8 +246,37 @@ class BAreaWorker(BObj):
     def update_area(self, area: BArea, b_figure: BFigure):
         pass
 
-    def get_mat(self, b_area: BArea):
-        return b_area.get_mat()
+    def get_base_mat(self, b_area: BArea):
+        return b_area.get_base_mat()
+
+    def get_mat_from_list_layers(self):
+        result_mat = self.cur_b_area.get_base_mat()
+        layers = list(self.cur_b_area.get_layers().values())
+        print(len(layers))
+        for layer in layers[1:]:
+            result_mat = self.merge_layers(result_mat, layer.get_mat())
+        # return self.cur_b_area.get_base_mat()
+        return result_mat
+
+    def merge_layers(self, background_layer, foreground_layer):
+        mask = cv2.cvtColor(cv2.GaussianBlur(cv2.split(foreground_layer)[3], (3, 3), 1), cv2.COLOR_GRAY2BGR)
+        background_layer = background_layer.astype(float)
+        foreground_layer = foreground_layer[:, :, :3].astype(float)
+        mask = mask.astype(float) / 255
+        background_layer = cv2.multiply(1.0 - mask, background_layer)
+        foreground_layer = cv2.multiply(mask, foreground_layer)
+        out_image = cv2.add(background_layer, foreground_layer)
+        return out_image / 255
+
+    def create_mask(self, mat):
+        img2gray = cv2.cvtColor(mat, cv2.COLOR_BGR2GRAY)
+        # ret, mask = cv2.threshold(img2gray, 250, 255, cv2.THRESH_TOZERO)
+        # ret, mask = cv2.threshold(img2gray, 250, 255, cv2.THRESH_BINARY)
+        # ret, mask = cv2.threshold(img2gray, 250, 255, cv2.THRESH_OTSU)
+        ret, mask = cv2.threshold(img2gray, 250, 255, cv2.THRESH_BINARY_INV)
+        color = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
+        color = cv2.GaussianBlur(color, (3, 3), 1)
+        return color
 
 
 class BAreaDrawer(BObj):
@@ -247,7 +287,7 @@ class BAreaDrawer(BObj):
 
     def __init__(self, area_worker: BAreaWorker):
         super().__init__()
-        self.base_mat = area_worker.get_mat(area_worker.get_current_area())
+        self.base_mat = area_worker.get_base_mat(area_worker.get_current_area())
         self.surface = None
         self.width, self.height = 0, 0
         self.ctx = None
@@ -489,4 +529,8 @@ class BWindowWorker:
 
 if __name__ == '__main__':
     l1 = [1, 2, 3]
-    print(l1[-1])
+
+    ll2 = {1: 34}
+    ll2.values()
+    for i in l1[1:]:
+        print(i)

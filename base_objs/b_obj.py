@@ -266,7 +266,7 @@ class BLayerWorker:
         background_layer = cv2.multiply(1.0 - mask, background_layer)
         foreground_layer = cv2.multiply(mask, foreground_layer)
         out_image = cv2.add(background_layer, foreground_layer)
-        return out_image / 255
+        return out_image/255
         # return None
 
 

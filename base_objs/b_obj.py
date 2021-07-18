@@ -4,6 +4,9 @@ import cv2
 from numpy import ndarray
 from itertools import count
 import math
+import time
+
+
 
 
 # def generate_mat_from_image(image_path=None):
@@ -12,6 +15,18 @@ import math
 #         return np.ndarray(shape=(t_surface.get_height(), t_surface.get_width(), 4), dtype=np.uint8,
 #                           buffer=t_surface.get_data())
 
+def current_milli_time():
+    return round(time.time() * 1000)
+
+def simple_show_mat(mat, file_name):
+    # cv2.imshow('m22', mat)
+    cv2.imwrite(file_name+str(current_milli_time())+'.png',mat)
+    # cv2.waitKey(1000)
+    # key = cv2.waitKey(1)
+    # while True:
+    #     if key == 27:
+    #         cv2.destroyAllWindows()
+    #         break
 
 class BObj:
     _ids = count(0)
@@ -222,8 +237,8 @@ class BArea(BObj):
     def get_layers(self) -> [BLayer]:
         return self.layers
 
-    def add_layer(self, BLayer):
-        pass
+    def add_layer(self,name, layer):
+        self.layers[name] = layer
 
 
 class BAreaWorker(BObj):
@@ -235,7 +250,7 @@ class BAreaWorker(BObj):
 
     def create_layer(self, name, mat):
         layer = BLayer(name, mat)
-        self.BArea.addLayer(layer)
+        self.cur_b_area.add_layer(name,layer)
 
     def set_current_area(self, b_area: BArea):
         self.cur_b_area = b_area
@@ -251,22 +266,27 @@ class BAreaWorker(BObj):
 
     def get_mat_from_list_layers(self):
         result_mat = self.cur_b_area.get_base_mat()
+        # simple_show_mat(result_mat, 'f1')
         layers = list(self.cur_b_area.get_layers().values())
         print(len(layers))
         for layer in layers[1:]:
             result_mat = self.merge_layers(result_mat, layer.get_mat())
-        # return self.cur_b_area.get_base_mat()
         return result_mat
 
     def merge_layers(self, background_layer, foreground_layer):
         mask = cv2.cvtColor(cv2.GaussianBlur(cv2.split(foreground_layer)[3], (3, 3), 1), cv2.COLOR_GRAY2BGR)
-        background_layer = background_layer.astype(float)
+        background_layer = background_layer[:, :, :3].astype(float)
         foreground_layer = foreground_layer[:, :, :3].astype(float)
-        mask = mask.astype(float) / 255
+        mask = mask.astype(float) #/ 255
+        # simple_show_mat(mask, 'f2')
+        # simple_show_mat(foreground_layer/ 255, 'f3')
+        # mask = mask.astype(float) #/ 255
+        # print(background_layer.shape, foreground_layer.shape, mask.shape)
         background_layer = cv2.multiply(1.0 - mask, background_layer)
         foreground_layer = cv2.multiply(mask, foreground_layer)
         out_image = cv2.add(background_layer, foreground_layer)
         return out_image / 255
+        # return None
 
     def create_mask(self, mat):
         img2gray = cv2.cvtColor(mat, cv2.COLOR_BGR2GRAY)
@@ -326,7 +346,7 @@ class BAreaDrawer(BObj):
             self.build_line(self.save_x, self.save_y, x, y)
         return self.create_mat_from_buf(self.surface.get_data())
 
-    def draw_line_and_point(self, x, y, mat, is_new_line):
+    def draw_line_and_point(self, x, y, is_new_line):
         self.init_b_area_drawer(mat)
         if self.save_x is not None and self.save_y is not None and not is_new_line:
             self.build_line(self.save_x, self.save_y, x, y)
@@ -481,7 +501,10 @@ class BAreaDrawer(BObj):
 
     def create_mat_from_buf(self, buf):
         l1 = np.ndarray(shape=(self.height, self.width, 4), dtype=np.uint8, buffer=buf)
-        # print(l1.shape)
+        print('8888888888888888888888888888888888888')
+        # simple_show_mat(l1)
+        simple_show_mat(l1,'ttt')
+        print(l1.shape)
         return l1
 
 

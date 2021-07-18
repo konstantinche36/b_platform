@@ -31,6 +31,8 @@ class BPlatform:
             if event == cv2.EVENT_LBUTTONDOWN:
                 self.b_figure_worker.add_point(x, y)
                 self.result_mat = self.b_area_drawer.draw_line_and_point(x, y, self.result_mat, self.reset_line_params)
+                #todo передать нужный mat от слоя
+                # self.result_mat = self.b_area_drawer.draw_line_and_point(x, y, self.b_area_worker.g self.reset_line_params)
                 self.temp_mat = self.result_mat
                 self.reset_line_params = False
             if event == cv2.EVENT_MOUSEMOVE:
@@ -66,7 +68,9 @@ class BPlatform:
                                 cv2.LINE_AA)
                     BWindowWorker.IS_CREATE_FIGURE_MODE = True
                     self.b_area_worker.create_layer(self.b_figure_worker.get_current_figure().get_name(),
-                                                    self.result_mat)
+                                                    # np.ndarray(shape=(1200, 900, 4)))
+                                                    np.ndarray(shape=(1200, 900, 4), dtype=np.uint8))
+                                                    # self.result_mat)
                 if key == ord('d'):
                     cv2.putText(self.result_mat, 'Create curve mode', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1,
                                 (0, 255, 0), 1, cv2.LINE_AA)

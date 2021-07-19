@@ -118,11 +118,12 @@ class BFigure(BObj):
         if b_points is None:
             b_points = []
         self.b_points = b_points
+        # self.
 
     def add_new_point(self, x, y):
         self.b_points.append(BPoint('tt_' + self.get_name(), x, y))
 
-    def get_points(self):
+    def get_points(self)->[BPoint]:
         return self.b_points
 
     def __str__(self):
@@ -153,6 +154,12 @@ class ArrayBD:
     def print_bd_values(self):
         return list(self.figures_bd.keys())
 
+    def get_all_name(self):
+        return list(self.figures_bd.keys())
+
+    def get_all_items(self)->[BFigure]:
+        return list(self.figures_bd.values())
+
 
 class BFigureWorker(BObj):
     B_FIGURE_WORKER_NAME_PART = 'FIGURE_WORKER_'
@@ -163,6 +170,18 @@ class BFigureWorker(BObj):
         self.has_current_figure = False
         self.current_figure: BFigure = None
         self.obj_name = name
+
+    def get_selected_figure(self, x, y):
+        # pass
+        for figure in self.figures_bd.get_all_items():
+            for point in figure.get_points():
+                if (point.get_x() - x)**2 + (point.get_y() - y)**2 <= 5**2:
+                # if point.get_x() == x and point.get_y() == y:
+                    return figure
+        return None
+
+    def get_all_figure_name(self):
+        return self.figures_bd.get_all_name()
 
     def remove_last_figure_point(self):
         self.current_figure.remove_last_point()
@@ -258,7 +277,7 @@ class BLayerWorker:
         mask = cv2.cvtColor(cv2.GaussianBlur(rr, (3, 3), 1), cv2.COLOR_GRAY2BGR)
         background_layer = background_layer[:, :, :3].astype(float)
         foreground_layer = foreground_layer[:, :, :3].astype(float)
-        mask = mask.astype(float)  # / 255
+        mask = mask.astype(float) / 255
         # simple_show_mat(mask, 'f2')
         # simple_show_mat(foreground_layer/ 255, 'f3')
         # mask = mask.astype(float) #/ 255
@@ -266,7 +285,7 @@ class BLayerWorker:
         background_layer = cv2.multiply(1.0 - mask, background_layer)
         foreground_layer = cv2.multiply(mask, foreground_layer)
         out_image = cv2.add(background_layer, foreground_layer)
-        return out_image/255
+        return out_image / 255
         # return None
 
 
@@ -370,6 +389,22 @@ class BAreaDrawer(BObj):
         self.save_curv_x2, self.save_curv_y2 = None, None  # point for curves
         self.x2, self.y2 = None, None  # point for to curv point2
 
+    def draw_bold_figure_from_list_coors(self, list_coors, mat):
+        self.init_b_area_drawer(np.copy(mat))
+        # for coors_pars in reversed(list_coors):
+        x1, y1, x2, y2 = None, None, None, None
+        for coors_pars in list_coors:
+            self.add_bold_point(coors_pars[0], coors_pars[1])
+            if x1 is not None and y1 is not None:
+                self.add_s_line(x1, y1, coors_pars[0], coors_pars[1])
+            x1, y1 = coors_pars[0], coors_pars[1]
+            # self.update_saved_x_y(coors_pars[0], coors_pars[1])
+            # self.update_saved_x_y(coors_pars[0], coors_pars[1])
+            # mat_res = self.draw_line_and_point(coors_pars[0], coors_pars[1], mat, False)
+        self.update_saved_x_y(list_coors[-1][0] if len(list_coors) > 0 else None,
+                              list_coors[-1][1] if len(list_coors) > 0 else None)
+        return self.get_result_mat()
+
     def draw_figure_from_list_coors(self, list_coors, mat):
         self.init_b_area_drawer(np.copy(mat))
         # for coors_pars in reversed(list_coors):
@@ -412,6 +447,9 @@ class BAreaDrawer(BObj):
 
     def add_point(self, x, y):
         self.add_point_to_sur(x, y, (0, 255, 255))
+
+    def add_bold_point(self, x, y):
+        self.add_point_to_sur(x, y, (255, 0, 0))
 
     def add_s_line(self, x1, y1, x2, y2):
         self.build_line(x1, y1, x2, y2)
@@ -490,7 +528,7 @@ class BAreaDrawer(BObj):
         print('Is deleted')
         pass
 
-    def add_point_to_sur(self, x, y, color, radius=5):
+    def add_point_to_sur(self, x, y, color, radius=2):
         self.ctx.set_source_rgb(color[0], color[1], color[2])
         self.ctx.arc(x, y, radius, 0, 2 * math.pi)
         self.ctx.fill()
@@ -579,6 +617,7 @@ class BWindowWorker:
     IS_CREATE_FIGURE_MODE = None
     IS_NEW_FIGURE = None
     IS_CREATE_CURVE_FIGURE_MODE = None
+    IS_SELECT_FIGURE_MODE = None
 
     def __init__(self, window_name='Test window'):
         self.window_name = window_name
@@ -604,6 +643,7 @@ class BWindowWorker:
 
 
 if __name__ == '__main__':
-    im = cv2.imread('../test_img.png')
-    print(type(im))
-    p(im.shape)
+    f = BFigure('l1', [BPoint('p1',1,3),BPoint('p2',5,3),BPoint('p3',6,2)])
+    print(f)
+
+    (x - x0)**2 + (y - y0)**2 <= 5**2

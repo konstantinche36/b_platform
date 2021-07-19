@@ -24,7 +24,7 @@ class BPlatform:
         self.temp_mat = np.copy(self.result_mat)
         self.mark_create_figure_is_true = None
         self.b_layer_worker = BLayerWorker('default_worker', base_mat)
-
+        self.active_figure: BFigure = None
         self.cur_mat = self.result_mat
         # self.b_layers_worker = BLayerWorker('base_layer', )
 
@@ -40,8 +40,6 @@ class BPlatform:
                                                                          self.b_layer_worker.get_layer(
                                                                              self.b_figure_worker.get_current_figure().get_name()).get_mat(),
                                                                          self.reset_line_params)
-                # todo передать нужный mat от слоя
-                # self.result_mat = self.b_area_drawer.draw_line_and_point(x, y, self.b_area_worker.g self.reset_line_params)
                 self.temp_mat = self.result_mat
                 self.reset_line_params = False
 
@@ -57,6 +55,14 @@ class BPlatform:
             #     self.reset_line_params = False
             # if event == cv2.EVENT_MOUSEMOVE:
             #     self.source_mat = self.b_area_drawer.edit_curve(x, y, self.temp_mat, self.reset_line_params)
+        if BWindowWorker.IS_SELECT_FIGURE_MODE:
+            if event == cv2.EVENT_LBUTTONDOWN:
+                print('IS_SELECT_FIGURE_MODE')
+                selected_figure = self.b_figure_worker.get_selected_figure(x, y)
+                self.active_figure = selected_figure
+                print(selected_figure)
+                # self.result_mat = self.b_area_drawer.draw_figure_from_list_coors(coors, self.layer_mat)
+                # self.result_mat = self.b_area_drawer.select_line_and_point(x, y, self.b_layer_worker.get_layer(self.b_figure_worker.get_current_figure().get_name()).get_mat(),self.reset_line_params)
 
     def show_window(self, window_name):
         is_show = True
@@ -78,7 +84,7 @@ class BPlatform:
                     self.b_figure_worker.create_figure(figure_name)
                     self.b_figure_worker.save_current_figure_to_bd()
                     layer_name = self.b_figure_worker.get_current_figure().get_name()
-                    print('layer_name: ',layer_name)
+                    print('layer_name: ', layer_name)
                     # print('figure is create')
                     cv2.putText(self.result_mat, 'Create mode', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 1,
                                 cv2.LINE_AA)
@@ -98,17 +104,28 @@ class BPlatform:
                     cv2.putText(self.result_mat, 'Edit mode', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 1,
                                 cv2.LINE_AA)
                     BWindowWorker.IS_EDIT_FIGURE_MODE = True
+                if key == ord('s'):
+                    cv2.putText(self.result_mat, 'Select mode', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 1,
+                                cv2.LINE_AA)
+                    BWindowWorker.IS_SELECT_FIGURE_MODE = True
+                    if self.active_figure is not None:
+                        self.result_mat = self.b_area_drawer.draw_bold_figure_from_list_coors(
+                            [[val.get_x(), val.get_y()] for val in self.active_figure.get_points()], self.layer_mat)
+                        self.temp_mat = self.result_mat
                 if key == ord('\b'):
                     cv2.putText(self.result_mat, 'Backspace mode', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0),
                                 1, cv2.LINE_AA)
-                    print(1, self.b_figure_worker.get_last_point())
+                    # print(1, self.b_figure_worker.get_last_point())
                     self.b_figure_worker.remove_last_figure_point()
-                    coors = [[val.get_x(), val.get_y()] for val in
-                             self.b_figure_worker.get_current_figure().get_points()]
-                    print(coors)
-                    self.result_mat = self.b_area_drawer.draw_figure_from_list_coors(coors, self.layer_mat)
-                    self.temp_mat = self.result_mat
-                    print(2, self.b_figure_worker.get_last_point())
+                    print(self.b_figure_worker.get_all_figure_name())
+                    for f_name in self.b_figure_worker.get_all_figure_name():
+                        coors = [[val.get_x(), val.get_y()] for val in
+                                 self.b_figure_worker.get_figure_by_name(f_name).get_points()]
+                        # coors = [[val.get_x(), val.get_y()] for val in self.b_figure_worker.get_current_figure().get_points()]
+                        print(coors)
+                        self.result_mat = self.b_area_drawer.draw_figure_from_list_coors(coors, self.layer_mat)
+                        self.temp_mat = self.result_mat
+                        print(2, self.b_figure_worker.get_last_point())
                     # self.b_area_drawer.delete_current_point()
                     # BWindowWorker.IS_EDIT_FIGURE_MODE = True
                 elif key == 27:
@@ -117,6 +134,7 @@ class BPlatform:
                     # print(self.b_figure_worker.get_current_figure().get_points())
                     BWindowWorker.IS_EDIT_FIGURE_MODE = False
                     BWindowWorker.IS_CREATE_FIGURE_MODE = False
+                    BWindowWorker.IS_SELECT_FIGURE_MODE = False
                     BWindowWorker.IS_NEW_FIGURE = True
                     print('ESC')
                     print(self.b_figure_worker.get_current_figure().get_points())

@@ -31,7 +31,7 @@ class BPlatform:
     def click_event_doer(self, event, x, y, flags, params=None):
         if BWindowWorker.IS_EDIT_FIGURE_MODE:
             print('IS_EDIT_MODE')
-        if BWindowWorker.IS_CREATE_FIGURE_MODE:
+        elif BWindowWorker.IS_CREATE_FIGURE_MODE:
             # print('IS_CREATE_MODE')
             # print('00000000000000000000000' + str(len(self.b_layer_worker.layers)))
             if event == cv2.EVENT_LBUTTONDOWN:
@@ -46,7 +46,7 @@ class BPlatform:
             if event == cv2.EVENT_MOUSEMOVE:
                 self.result_mat = self.b_area_drawer.show_line(x, y, self.temp_mat, self.reset_line_params)
                 # print('LAST')
-        if BWindowWorker.IS_CREATE_CURVE_FIGURE_MODE:
+        elif BWindowWorker.IS_CREATE_CURVE_FIGURE_MODE:
             print('IS_CURVE_CREATE_MODE')
             # if event == cv2.EVENT_LBUTTONUP:
             #     # self.b_figure_worker.
@@ -55,7 +55,7 @@ class BPlatform:
             #     self.reset_line_params = False
             # if event == cv2.EVENT_MOUSEMOVE:
             #     self.source_mat = self.b_area_drawer.edit_curve(x, y, self.temp_mat, self.reset_line_params)
-        if BWindowWorker.IS_SELECT_FIGURE_MODE:
+        elif BWindowWorker.IS_SELECT_FIGURE_MODE:
             if event == cv2.EVENT_LBUTTONDOWN:
                 print('IS_SELECT_FIGURE_MODE')
                 selected_figure = self.b_figure_worker.get_selected_figure(x, y)
@@ -63,7 +63,16 @@ class BPlatform:
                 print(selected_figure)
                 # self.result_mat = self.b_area_drawer.draw_figure_from_list_coors(coors, self.layer_mat)
                 # self.result_mat = self.b_area_drawer.select_line_and_point(x, y, self.b_layer_worker.get_layer(self.b_figure_worker.get_current_figure().get_name()).get_mat(),self.reset_line_params)
-
+        elif event == cv2.EVENT_LBUTTONDOWN:
+            print('IS_SELECT_FIGURE_MODE')
+            selected_figure = self.b_figure_worker.get_selected_figure(x, y)
+            self.active_figure = selected_figure
+            print(selected_figure)
+            if self.active_figure is not None:
+                print('Shape 100:', self.result_mat .shape)
+                self.result_mat = self.b_area_drawer.draw_bold_figure_from_list_coors(
+                    [[val.get_x(), val.get_y()] for val in self.active_figure.get_points()], self.result_mat)
+                self.temp_mat = self.result_mat
     def show_window(self, window_name):
         is_show = True
         cv2.namedWindow(window_name)

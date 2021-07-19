@@ -263,6 +263,7 @@ class BLayerWorker:
 
     def get_mat_from_list_layers(self):
         result_mat = self.get_base_layer().get_mat()
+        print('Shape 000:',result_mat.shape)
         # simple_show_mat(result_mat, 'f1')
         # layers = list(self.base_layer.get_mat().get_layers().values())
         # print(len(layers))
@@ -285,6 +286,11 @@ class BLayerWorker:
         background_layer = cv2.multiply(1.0 - mask, background_layer)
         foreground_layer = cv2.multiply(mask, foreground_layer)
         out_image = cv2.add(background_layer, foreground_layer)
+        b_channel, g_channel, r_channel = cv2.split(out_image)
+        img_BGRA = cv2.merge((b_channel, g_channel, r_channel, rr/255))
+        print('Shape 500:', out_image.shape)
+        # return img_BGRA / 255
+        print('MERGE OK!!!')
         return out_image / 255
         # return None
 
@@ -390,7 +396,9 @@ class BAreaDrawer(BObj):
         self.x2, self.y2 = None, None  # point for to curv point2
 
     def draw_bold_figure_from_list_coors(self, list_coors, mat):
+        print('Shape 200:', mat.shape)
         self.init_b_area_drawer(np.copy(mat))
+        print('Shape 250:', mat.shape)
         # for coors_pars in reversed(list_coors):
         x1, y1, x2, y2 = None, None, None, None
         for coors_pars in list_coors:

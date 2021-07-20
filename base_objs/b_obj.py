@@ -270,20 +270,35 @@ class BLayerWorker:
         return result_mat
 
     def merge_layers(self, background_layer, foreground_layer):
-        width, height, channels = foreground_layer.shape
-        rr = cv2.split(foreground_layer)[3]
-        mask = cv2.cvtColor(cv2.GaussianBlur(rr, (3, 3), 1), cv2.COLOR_GRAY2BGR)
+        mask = cv2.cvtColor(cv2.GaussianBlur(cv2.split(foreground_layer)[3], (3, 3), 1), cv2.COLOR_GRAY2BGR)
         background_layer = background_layer[:, :, :3].astype(float)
         foreground_layer = foreground_layer[:, :, :3].astype(float)
-        mask = mask.astype(float) / 255
+        mask = mask.astype(float)  # / 255
+        # simple_show_mat(mask, 'f2')
+        # simple_show_mat(foreground_layer/ 255, 'f3')
+        # mask = mask.astype(float) #/ 255
+        # print(background_layer.shape, foreground_layer.shape, mask.shape)
         background_layer = cv2.multiply(1.0 - mask, background_layer)
         foreground_layer = cv2.multiply(mask, foreground_layer)
         out_image = cv2.add(background_layer, foreground_layer)
-        # alpha = np.zeros((width, height, 1), np.uint8)
-        # b_channel, g_channel, r_channel = cv2.split(out_image)
-        # mat = cv2.merge((b_channel, g_channel, r_channel, alpha/255))
         return out_image / 255
-        # return out_image / 255
+        # return None
+
+    # def merge_layers(self, background_layer, foreground_layer):
+    #     width, height, channels = foreground_layer.shape
+    #     rr = cv2.split(foreground_layer)[3]
+    #     mask = cv2.cvtColor(cv2.GaussianBlur(rr, (3, 3), 1), cv2.COLOR_GRAY2BGR)
+    #     background_layer = background_layer[:, :, :3].astype(float)
+    #     foreground_layer = foreground_layer[:, :, :3].astype(float)
+    #     mask = mask.astype(float) / 255
+    #     background_layer = cv2.multiply(1.0 - mask, background_layer)
+    #     foreground_layer = cv2.multiply(mask, foreground_layer)
+    #     out_image = cv2.add(background_layer, foreground_layer)
+    #     # alpha = np.zeros((width, height, 1), np.uint8)
+    #     # b_channel, g_channel, r_channel = cv2.split(out_image)
+    #     # mat = cv2.merge((b_channel, g_channel, r_channel, alpha/255))
+    #     return out_image / 255
+    #     # return out_image / 255
 
 
 class BArea(BObj):

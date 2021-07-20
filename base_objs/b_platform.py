@@ -108,6 +108,7 @@ class BPlatform:
                     BWindowWorker.IS_SELECT_FIGURE_MODE = False
                     BWindowWorker.IS_NEW_FIGURE = True
                     self.reset_line_params = True
+                    self.result_f_mat = self.temp_f_mat
                     self.result_f_mat = self.b_layer_worker.get_mat_from_list_layers()
                     print('SSS', self.result_f_mat.shape)
                 elif key == ord('q'):

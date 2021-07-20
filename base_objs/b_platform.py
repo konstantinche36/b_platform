@@ -26,7 +26,9 @@ class BPlatform:
         self.b_layer_worker = BLayerWorker('default_worker', base_mat)
         self.active_figure: BFigure = None
         self.cur_mat = self.result_mat
-        # self.b_layers_worker = BLayerWorker('base_layer', )
+
+        self.source_mat = base_mat
+        self.result_mat = base_mat
 
     def click_event_doer(self, event, x, y, flags, params=None):
         if BWindowWorker.IS_EDIT_FIGURE_MODE:
@@ -69,9 +71,10 @@ class BPlatform:
             self.active_figure = selected_figure
             print(selected_figure)
             if self.active_figure is not None:
-                print('Shape 100:', self.result_mat .shape)
+                print('Shape 800:', self.result_mat.shape)
                 self.result_mat = self.b_area_drawer.draw_bold_figure_from_list_coors(
                     [[val.get_x(), val.get_y()] for val in self.active_figure.get_points()], self.result_mat)
+                print('10000',self.result_mat.shape)
                 self.temp_mat = self.result_mat
     def show_window(self, window_name):
         is_show = True
@@ -146,10 +149,10 @@ class BPlatform:
                     BWindowWorker.IS_SELECT_FIGURE_MODE = False
                     BWindowWorker.IS_NEW_FIGURE = True
                     print('ESC')
-                    print(self.b_figure_worker.get_current_figure().get_points())
                     self.result_mat = self.temp_mat
                     self.reset_line_params = True
                     self.result_mat = self.b_layer_worker.get_mat_from_list_layers()
+                    print('5000',self.result_mat.shape)
                 elif key == ord('q'):
                     break
         cv2.destroyAllWindows()

@@ -5,6 +5,7 @@ from numpy import ndarray
 from itertools import count
 import math
 import time
+from utils import utils
 
 
 # def generate_mat_from_image(image_path=None):
@@ -123,7 +124,7 @@ class BFigure(BObj):
     def add_new_point(self, x, y):
         self.b_points.append(BPoint('tt_' + self.get_name(), x, y))
 
-    def get_points(self)->[BPoint]:
+    def get_points(self) -> [BPoint]:
         return self.b_points
 
     def __str__(self):
@@ -157,7 +158,7 @@ class ArrayBD:
     def get_all_name(self):
         return list(self.figures_bd.keys())
 
-    def get_all_items(self)->[BFigure]:
+    def get_all_items(self) -> [BFigure]:
         return list(self.figures_bd.values())
 
 
@@ -175,8 +176,8 @@ class BFigureWorker(BObj):
         # pass
         for figure in self.figures_bd.get_all_items():
             for point in figure.get_points():
-                if (point.get_x() - x)**2 + (point.get_y() - y)**2 <= 5**2:
-                # if point.get_x() == x and point.get_y() == y:
+                if (point.get_x() - x) ** 2 + (point.get_y() - y) ** 2 <= 5 ** 2:
+                    # if point.get_x() == x and point.get_y() == y:
                     return figure
         return None
 
@@ -263,7 +264,7 @@ class BLayerWorker:
 
     def get_mat_from_list_layers(self):
         result_mat = self.get_base_layer().get_mat()
-        print('Shape 000:',result_mat.shape)
+        print('Shape 000:', result_mat.shape)
         # simple_show_mat(result_mat, 'f1')
         # layers = list(self.base_layer.get_mat().get_layers().values())
         # print(len(layers))
@@ -287,7 +288,7 @@ class BLayerWorker:
         foreground_layer = cv2.multiply(mask, foreground_layer)
         out_image = cv2.add(background_layer, foreground_layer)
         b_channel, g_channel, r_channel = cv2.split(out_image)
-        img_BGRA = cv2.merge((b_channel, g_channel, r_channel, rr/255))
+        img_BGRA = cv2.merge((b_channel, g_channel, r_channel, rr / 255))
         print('Shape 500:', out_image.shape)
         # return img_BGRA / 255
         print('MERGE OK!!!')
@@ -397,7 +398,9 @@ class BAreaDrawer(BObj):
 
     def draw_bold_figure_from_list_coors(self, list_coors, mat):
         print('Shape 200:', mat.shape)
-        self.init_b_area_drawer(np.copy(mat))
+        mat = utils.add_alpha_channel(mat)
+        # self.init_b_area_drawer(np.copy(mat))
+        self.init_b_area_drawer(mat)
         print('Shape 250:', mat.shape)
         # for coors_pars in reversed(list_coors):
         x1, y1, x2, y2 = None, None, None, None
@@ -651,7 +654,7 @@ class BWindowWorker:
 
 
 if __name__ == '__main__':
-    f = BFigure('l1', [BPoint('p1',1,3),BPoint('p2',5,3),BPoint('p3',6,2)])
+    f = BFigure('l1', [BPoint('p1', 1, 3), BPoint('p2', 5, 3), BPoint('p3', 6, 2)])
     print(f)
 
-    (x - x0)**2 + (y - y0)**2 <= 5**2
+    (x - x0) ** 2 + (y - y0) ** 2 <= 5 ** 2

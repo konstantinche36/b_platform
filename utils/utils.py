@@ -1,6 +1,16 @@
 import pyautogui
 import time
+import numpy as np
+import cv2
 
+def add_alpha_channel(mat:np.ndarray):
+    width, height, channels = mat.shape
+    if channels == 3:
+        alpha = np.zeros((width, height, 1), np.uint8)
+        print('TT', alpha.shape)
+        b_channel, g_channel, r_channel = cv2.split(mat)
+        mat = cv2.merge((b_channel, g_channel, r_channel, alpha/255))
+    return mat
 
 def get_screen_size() -> (int, int):
     width, height = pyautogui.size()

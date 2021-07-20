@@ -268,7 +268,8 @@ class BLayerWorker:
         # simple_show_mat(result_mat, 'f1')
         # layers = list(self.base_layer.get_mat().get_layers().values())
         # print(len(layers))
-        for layer in list(self.layers.values())[1:]:
+        for i, layer in enumerate(list(self.layers.values())[1:]):
+            print(i,layer.get_mat().shape)
             result_mat = self.merge_layers(result_mat, layer.get_mat())
         return result_mat
 

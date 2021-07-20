@@ -172,12 +172,14 @@ class BFigureWorker(BObj):
         self.current_figure: BFigure = None
         self.obj_name = name
 
+    def set_current_figure(self, figure:BFigure):
+        self.current_figure = figure
+
     def get_selected_figure(self, x, y):
         # pass
         for figure in self.figures_bd.get_all_items():
             for point in figure.get_points():
                 if (point.get_x() - x) ** 2 + (point.get_y() - y) ** 2 <= 5 ** 2:
-                    # if point.get_x() == x and point.get_y() == y:
                     return figure
         return None
 
@@ -202,20 +204,9 @@ class BFigureWorker(BObj):
     def save_current_figure_to_bd(self):
         self.figures_bd.add_item(self.current_figure)
 
-    # def create_new_figure2(self, x, y):
-    #     self.current_figure = BFigure(self.obj_name, [BPoint(name=self.obj_name, x=x, y=y)])
-    #     self.has_current_figure = True
-    #     if self.figures_bd is None:
-    #         self.figures_bd = ArrayFiguresBD()
-    #     print(f'create figure is True')
-
     def add_point(self, x, y):
         print(f'function add_point val:{x} {y}')
         self.current_figure.add_new_point(x, y)
-        # if not self.has_current_figure:
-        #     self.create_new_figure(self.current_figure.get_figure_name(), x, y)
-        # else:
-        #     self.current_figure.add_new_point(x, y)
 
     def get_current_figure(self):
         return self.current_figure
@@ -228,17 +219,6 @@ class BFigureWorker(BObj):
         print(self.current_figure.get_points())
         # # todo
         # pass
-
-
-# class BFiguresBD:
-#     def __init__(self, figures=None):
-#         self.figures = figures
-#
-#     def add_figure(self, figure):
-#         self.figures.append(figure)
-#
-#     def delete_figure(self, figure_name):
-#         pass
 
 class BLayerWorker:
     def __init__(self, name: str, base_mat: ndarray):
@@ -273,33 +253,11 @@ class BLayerWorker:
         mask = cv2.cvtColor(cv2.GaussianBlur(cv2.split(foreground_layer)[3], (3, 3), 1), cv2.COLOR_GRAY2BGR)
         background_layer = background_layer[:, :, :3].astype(float)
         foreground_layer = foreground_layer[:, :, :3].astype(float)
-        mask = mask.astype(float)  # / 255
-        # simple_show_mat(mask, 'f2')
-        # simple_show_mat(foreground_layer/ 255, 'f3')
-        # mask = mask.astype(float) #/ 255
-        # print(background_layer.shape, foreground_layer.shape, mask.shape)
+        mask = mask.astype(float) / 255
         background_layer = cv2.multiply(1.0 - mask, background_layer)
         foreground_layer = cv2.multiply(mask, foreground_layer)
         out_image = cv2.add(background_layer, foreground_layer)
         return out_image / 255
-        # return None
-
-    # def merge_layers(self, background_layer, foreground_layer):
-    #     width, height, channels = foreground_layer.shape
-    #     rr = cv2.split(foreground_layer)[3]
-    #     mask = cv2.cvtColor(cv2.GaussianBlur(rr, (3, 3), 1), cv2.COLOR_GRAY2BGR)
-    #     background_layer = background_layer[:, :, :3].astype(float)
-    #     foreground_layer = foreground_layer[:, :, :3].astype(float)
-    #     mask = mask.astype(float) / 255
-    #     background_layer = cv2.multiply(1.0 - mask, background_layer)
-    #     foreground_layer = cv2.multiply(mask, foreground_layer)
-    #     out_image = cv2.add(background_layer, foreground_layer)
-    #     # alpha = np.zeros((width, height, 1), np.uint8)
-    #     # b_channel, g_channel, r_channel = cv2.split(out_image)
-    #     # mat = cv2.merge((b_channel, g_channel, r_channel, alpha/255))
-    #     return out_image / 255
-    #     # return out_image / 255
-
 
 class BArea(BObj):
     B_AREA_NAME_PART = 'AREA_'
@@ -362,21 +320,13 @@ class BAreaWorker(BObj):
         background_layer = background_layer[:, :, :3].astype(float)
         foreground_layer = foreground_layer[:, :, :3].astype(float)
         mask = mask.astype(float)  # / 255
-        # simple_show_mat(mask, 'f2')
-        # simple_show_mat(foreground_layer/ 255, 'f3')
-        # mask = mask.astype(float) #/ 255
-        # print(background_layer.shape, foreground_layer.shape, mask.shape)
         background_layer = cv2.multiply(1.0 - mask, background_layer)
         foreground_layer = cv2.multiply(mask, foreground_layer)
         out_image = cv2.add(background_layer, foreground_layer)
         return out_image / 255
-        # return None
 
     def create_mask(self, mat):
         img2gray = cv2.cvtColor(mat, cv2.COLOR_BGR2GRAY)
-        # ret, mask = cv2.threshold(img2gray, 250, 255, cv2.THRESH_TOZERO)
-        # ret, mask = cv2.threshold(img2gray, 250, 255, cv2.THRESH_BINARY)
-        # ret, mask = cv2.threshold(img2gray, 250, 255, cv2.THRESH_OTSU)
         ret, mask = cv2.threshold(img2gray, 250, 255, cv2.THRESH_BINARY_INV)
         color = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
         color = cv2.GaussianBlur(color, (3, 3), 1)
@@ -465,7 +415,7 @@ class BAreaDrawer(BObj):
         self.add_point_to_sur(x, y, (0, 255, 255))
 
     def add_bold_point(self, x, y):
-        self.add_point_to_sur(x, y, (255, 0, 0))
+        self.add_point_to_sur(x, y, (255, 0, 0), radius= 5)
 
     def add_s_line(self, x1, y1, x2, y2):
         self.build_line(x1, y1, x2, y2)
@@ -544,7 +494,7 @@ class BAreaDrawer(BObj):
         print('Is deleted')
         pass
 
-    def add_point_to_sur(self, x, y, color, radius=2):
+    def add_point_to_sur(self, x, y, color, radius=3):
         self.ctx.set_source_rgb(color[0], color[1], color[2])
         self.ctx.arc(x, y, radius, 0, 2 * math.pi)
         self.ctx.fill()

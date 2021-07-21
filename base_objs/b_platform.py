@@ -40,7 +40,8 @@ class BPlatform:
         elif BWindowWorker.IS_CREATE_FIGURE_MODE:
             if event == cv2.EVENT_LBUTTONDOWN:
                 self.b_figure_worker.add_point(x, y)
-                self.result_f_mat = self.b_area_drawer.draw_line_and_point(x, y, self.active_layer.get_mat(), self.reset_line_params)
+                self.result_f_mat = self.b_area_drawer.draw_line_and_point(x, y, self.active_layer.get_mat(),
+                                                                           self.reset_line_params)
                 self.temp_f_mat = self.result_f_mat
                 self.reset_line_params = False
             if event == cv2.EVENT_MOUSEMOVE:
@@ -101,13 +102,16 @@ class BPlatform:
                     cv2.putText(self.result_mat, 'Backspace mode', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0),
                                 1, cv2.LINE_AA)
                     self.b_figure_worker.remove_last_figure_point()
+                    print('1111', self.b_figure_worker.get_all_figure_name())
+                    coors = None
+                    local_mat = np.copy(self.source_f_mat)
                     for f_name in self.b_figure_worker.get_all_figure_name():
-                        coors = [[val.get_x(), val.get_y()] for val in
-                                 self.b_figure_worker.get_figure_by_name(f_name).get_points()]
-                        print(coors)
-                        self.result_mat = self.b_area_drawer.draw_figure_from_list_coors(coors, self.layer_mat)
-                        self.temp_mat = self.result_mat
-                        print(2, self.b_figure_worker.get_last_point())
+                        coors = [[val.get_x(), val.get_y()] for val in self.b_figure_worker.get_figure_by_name(f_name).get_points()]
+                        local_mat = self.b_area_drawer.draw_figure_from_list_coors(coors,local_mat)
+                    self.result_f_mat = local_mat
+                    self.active_layer.set_mat(local_mat)
+                    self.layer_mat = local_mat
+                    self.temp_f_mat = self.result_f_mat
                 elif key == 27:
                     BWindowWorker.IS_EDIT_FIGURE_MODE = False
                     BWindowWorker.IS_CREATE_FIGURE_MODE = False
@@ -115,7 +119,7 @@ class BPlatform:
                     BWindowWorker.IS_NEW_FIGURE = True
                     self.reset_line_params = True
                     self.result_f_mat = self.temp_f_mat
-                    self.result_f_mat = self.b_layer_worker.get_mat_from_list_layers()
+                    # self.result_f_mat = self.b_layer_worker.get_mat_from_list_layers()
                     print('SSS', self.result_f_mat.shape)
                 elif key == ord('q'):
                     break

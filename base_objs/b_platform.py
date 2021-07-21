@@ -102,12 +102,7 @@ class BPlatform:
                     cv2.putText(self.result_mat, 'Backspace mode', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0),
                                 1, cv2.LINE_AA)
                     self.b_figure_worker.remove_last_figure_point()
-                    print('1111', self.b_figure_worker.get_all_figure_name())
-                    coors = None
-                    local_mat = np.copy(self.source_f_mat)
-                    for f_name in self.b_figure_worker.get_all_figure_name():
-                        coors = [[val.get_x(), val.get_y()] for val in self.b_figure_worker.get_figure_by_name(f_name).get_points()]
-                        local_mat = self.b_area_drawer.draw_figure_from_list_coors(coors,local_mat)
+                    local_mat = self.get_mat_of_all_figures()
                     self.result_f_mat = local_mat
                     self.active_layer.set_mat(local_mat)
                     self.layer_mat = local_mat
@@ -119,7 +114,6 @@ class BPlatform:
                     BWindowWorker.IS_NEW_FIGURE = True
                     self.reset_line_params = True
                     self.result_f_mat = self.temp_f_mat
-                    # self.result_f_mat = self.b_layer_worker.get_mat_from_list_layers()
                     print('SSS', self.result_f_mat.shape)
                 elif key == ord('q'):
                     break
@@ -127,6 +121,14 @@ class BPlatform:
 
     def draw_text(self, text: str):
         cv2.putText(self.result_mat, text, (10, 450), cv2.FONT_HERSHEY_SIMPLEX, 3, (0, 255, 0), 2, cv2.LINE_AA)
+
+    def get_mat_of_all_figures(self):
+        coors = None
+        local_mat = np.copy(self.source_f_mat)
+        for f_name in self.b_figure_worker.get_all_figure_name():
+            coors = [[val.get_x(), val.get_y()] for val in self.b_figure_worker.get_figure_by_name(f_name).get_points()]
+            local_mat = self.b_area_drawer.draw_figure_from_list_coors(coors, local_mat)
+        return local_mat
 
 
 def locate_app_on_center_of_window(window_name, image_width: int):

@@ -175,6 +175,13 @@ class BFigureWorker(BObj):
     def set_current_figure(self, figure: BFigure):
         self.current_figure = figure
 
+    def get_selected_point(self, x, y, figure: BFigure):
+        if figure is not None:
+            for point in figure.get_points():
+                if (point.get_x() - x) ** 2 + (point.get_y() - y) ** 2 <= 5 ** 2:
+                    return point
+        return None
+
     def get_selected_figure(self, x, y):
         for figure in self.figures_bd.get_all_items():
             list_points_of_figure = figure.get_points()
@@ -367,13 +374,15 @@ class BAreaDrawer(BObj):
         self.save_curv_x2, self.save_curv_y2 = None, None  # point for curves
         self.x2, self.y2 = None, None  # point for to curv point2
 
-    def draw_bold_figure_from_list_coors(self, list_coors, mat):
-        print('Shape 200:', mat.shape)
+    def draw_bold_point(self, x, y, mat):
         mat = utils.add_alpha_channel(mat)
-        # self.init_b_area_drawer(np.copy(mat))
         self.init_b_area_drawer(mat)
-        print('Shape 250:', mat.shape)
-        # for coors_pars in reversed(list_coors):
+        self.add_bold_point(x, y, color=(255,0,3))
+        return self.get_result_mat()
+
+    def draw_bold_figure_from_list_coors(self, list_coors, mat):
+        mat = utils.add_alpha_channel(mat)
+        self.init_b_area_drawer(mat)
         x1, y1, x2, y2 = None, None, None, None
         for coors_pars in list_coors:
             self.add_bold_point(coors_pars[0], coors_pars[1])
@@ -430,8 +439,8 @@ class BAreaDrawer(BObj):
     def add_point(self, x, y):
         self.add_point_to_sur(x, y, (0, 255, 255))
 
-    def add_bold_point(self, x, y):
-        self.add_point_to_sur(x, y, (255, 0, 0), radius=5)
+    def add_bold_point(self, x, y, color=(255, 0, 0)):
+        self.add_point_to_sur(x, y, color, radius=5)
 
     def add_s_line(self, x1, y1, x2, y2):
         self.build_line(x1, y1, x2, y2)

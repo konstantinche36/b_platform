@@ -1,7 +1,8 @@
 import cv2
 import numpy as np
 from utils import utils
-from base_objs.b_obj import BFigure, BFigureWorker, BArea, BAreaWorker, BWindowWorker, BMatBD, BAreaDrawer, BLayerWorker
+from base_objs.b_obj import BPoint, BFigure, BFigureWorker, BArea, BAreaWorker, BWindowWorker, BMatBD, BAreaDrawer, \
+    BLayerWorker
 from numpy import ndarray
 
 figure_name = utils.get_random_name()
@@ -25,6 +26,7 @@ class BPlatform:
         self.mark_create_figure_is_true = None
         self.b_layer_worker = BLayerWorker('default_worker', base_mat)
         self.active_figure: BFigure = None
+        self.active_point: BPoint = None
         self.cur_mat = self.result_mat
 
         self.layer_mat = self.result_mat
@@ -56,13 +58,17 @@ class BPlatform:
         elif event == cv2.EVENT_LBUTTONDOWN:
             print(self.b_figure_worker.get_all_figure_name())
             selected_figure = self.b_figure_worker.get_selected_figure(x, y)
+            selected_point = self.b_figure_worker.get_selected_point(x, y, selected_figure)
             self.active_figure = selected_figure
+            self.active_point = selected_point
             self.b_figure_worker.set_current_figure(self.active_figure)
-            print(selected_figure)
             if self.active_figure is not None:
-                print('OKOKOK')
                 self.result_f_mat = self.b_area_drawer.draw_bold_figure_from_list_coors(
                     [[val.get_x(), val.get_y()] for val in self.active_figure.get_points()], np.copy(self.layer_mat))
+                if self.active_point is not None:
+                    self.result_f_mat = self.b_area_drawer.draw_bold_point(self.active_point.get_x(),
+                                                                           self.active_point.get_y(),
+                                                                           np.copy(self.result_f_mat))
                 self.temp_f_mat = self.result_f_mat
 
     def show_window(self, window_name):

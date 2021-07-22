@@ -172,16 +172,30 @@ class BFigureWorker(BObj):
         self.current_figure: BFigure = None
         self.obj_name = name
 
-    def set_current_figure(self, figure:BFigure):
+    def set_current_figure(self, figure: BFigure):
         self.current_figure = figure
 
     def get_selected_figure(self, x, y):
-        # pass
         for figure in self.figures_bd.get_all_items():
-            for point in figure.get_points():
+            list_points_of_figure = figure.get_points()
+            for point in list_points_of_figure:
                 if (point.get_x() - x) ** 2 + (point.get_y() - y) ** 2 <= 5 ** 2:
                     return figure
+            if self.check_coors_on_line(x, y, list_points_of_figure):
+                return figure
         return None
+
+    def check_coors_on_line(self, x, y, points: [BPoint]):
+        for p1, p2 in zip(points, points[1:]):
+            if int(self.calc_dist_betw_two_point(p1.get_x(), p1.get_y(), p2.get_x(), p2.get_y())) == int(
+                    self.calc_dist_betw_two_point(p1.get_x(), p1.get_y(), x, y) + self.calc_dist_betw_two_point(x, y,
+                                                                                                                p2.get_x(),
+                                                                                                                p2.get_y())):
+                return True
+        return False
+
+    def calc_dist_betw_two_point(self, x1, y1, x2, y2):
+        return math.hypot(x2 - x1, y2 - y1)
 
     def get_all_figure_name(self):
         return self.figures_bd.get_all_name()
@@ -220,6 +234,7 @@ class BFigureWorker(BObj):
         # # todo
         # pass
 
+
 class BLayerWorker:
     def __init__(self, name: str, base_mat: ndarray):
         self.name = name
@@ -245,7 +260,7 @@ class BLayerWorker:
     def get_mat_from_list_layers(self):
         result_mat = self.get_base_layer().get_mat()
         for i, layer in enumerate(list(self.layers.values())[1:]):
-            print(i,layer.get_mat().shape)
+            print(i, layer.get_mat().shape)
             result_mat = self.merge_layers(result_mat, layer.get_mat())
         return result_mat
 
@@ -258,6 +273,7 @@ class BLayerWorker:
         foreground_layer = cv2.multiply(mask, foreground_layer)
         out_image = cv2.add(background_layer, foreground_layer)
         return out_image / 255
+
 
 class BArea(BObj):
     B_AREA_NAME_PART = 'AREA_'
@@ -415,7 +431,7 @@ class BAreaDrawer(BObj):
         self.add_point_to_sur(x, y, (0, 255, 255))
 
     def add_bold_point(self, x, y):
-        self.add_point_to_sur(x, y, (255, 0, 0), radius= 5)
+        self.add_point_to_sur(x, y, (255, 0, 0), radius=5)
 
     def add_s_line(self, x1, y1, x2, y2):
         self.build_line(x1, y1, x2, y2)

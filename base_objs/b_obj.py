@@ -377,7 +377,7 @@ class BAreaDrawer(BObj):
     def draw_bold_point(self, x, y, mat):
         mat = utils.add_alpha_channel(mat)
         self.init_b_area_drawer(mat)
-        self.add_bold_point(x, y, color=(255,0,3))
+        self.add_bold_point(x, y, color=(255, 0, 3))
         return self.get_result_mat()
 
     def draw_bold_figure_from_list_coors(self, list_coors, mat):

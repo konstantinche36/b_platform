@@ -425,6 +425,11 @@ class BAreaDrawer(BObj):
             self.build_line(self.save_x, self.save_y, x, y)
         return self.create_mat_from_buf(self.surface.get_data())
 
+    # def move_point(self, x, y ,mat,point:BPoint):
+    #     self.init_b_area_drawer(np.copy(mat))
+    #     # self.
+    #     return self.create_mat_from_buf(self.surface.get_data())
+
     def draw_line_and_point(self, x, y, mat, is_new_line):
         self.init_b_area_drawer(mat)
         if self.save_x is not None and self.save_y is not None and not is_new_line:

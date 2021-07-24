@@ -49,11 +49,15 @@ class BObj:
 
 class BPoint(BObj):
     B_POINT_NAME_PART = 'POINT_'
+    DEF_COLOR = (0, 0, 250)
+    DEF_RADIUS = 3
 
-    def __init__(self, name, x, y):
+    def __init__(self, name, x, y, color: (int, int, int) = DEF_COLOR, radius: int = DEF_RADIUS):
         super().__init__(BPoint.B_POINT_NAME_PART + name)
         self.x = x
         self.y = y
+        self.color = color
+        self.radius = radius
 
     def get_x(self):
         return self.x
@@ -66,6 +70,18 @@ class BPoint(BObj):
 
     def set_y(self, y):
         self.y = y
+
+    def set_color(self, color: (int, int, int) = DEF_COLOR):
+        self.color = color
+
+    def get_color(self):
+        return self.color
+
+    def set_radius(self, radius: int = DEF_RADIUS):
+        self.radius = radius
+
+    def get_radius(self):
+        return self.radius
 
     def __str__(self):
         return f'{self.name} x:{self.x}, y:{self.y}'
@@ -174,6 +190,9 @@ class BFigureWorker(BObj):
 
     def set_current_figure(self, figure: BFigure):
         self.current_figure = figure
+
+    def get_figures(self) -> [BFigure]:
+        return self.figures_bd.get_all_items()
 
     def get_selected_point(self, x, y, figure: BFigure):
         if figure is not None:
@@ -374,10 +393,10 @@ class BAreaDrawer(BObj):
         self.save_curv_x2, self.save_curv_y2 = None, None  # point for curves
         self.x2, self.y2 = None, None  # point for to curv point2
 
-    def draw_bold_point(self, x, y, mat):
-        mat = utils.add_alpha_channel(mat)
+    def draw_bold_point(self, point, mat):
+        # mat = utils.add_alpha_channel(mat)
         self.init_b_area_drawer(mat)
-        self.add_bold_point(x, y, color=(255, 0, 3))
+        self.add_bold_point(point.get_x(), point.get_y(), color=point.get_color(), radius=point.get_radius())
         return self.get_result_mat()
 
     def draw_bold_figure_from_list_coors(self, list_coors, mat):
@@ -395,6 +414,10 @@ class BAreaDrawer(BObj):
         self.update_saved_x_y(list_coors[-1][0] if len(list_coors) > 0 else None,
                               list_coors[-1][1] if len(list_coors) > 0 else None)
         return self.get_result_mat()
+
+    def draw_cur_figure_from_points(self, points):
+
+        pass
 
     def draw_figure_from_list_coors(self, list_coors, mat):
         self.init_b_area_drawer(np.copy(mat))
@@ -444,14 +467,27 @@ class BAreaDrawer(BObj):
     def add_point(self, x, y):
         self.add_point_to_sur(x, y, (0, 255, 255))
 
-    def add_bold_point(self, x, y, color=(255, 0, 0)):
-        self.add_point_to_sur(x, y, color, radius=5)
+    def add_bold_point(self, x, y, color=(255, 0, 0), radius=5):
+        self.add_point_to_sur(x, y, color, radius=radius)
 
     def add_s_line(self, x1, y1, x2, y2):
         self.build_line(x1, y1, x2, y2)
 
-    def get_result_mat(self):
+    def draw_temp_line(self, mat: ndarray, figure: BFigure, x, y):
+        self.init_b_area_drawer(np.copy(mat))
+        self.add_temp_line(figure.get_points()[-1], x, y)
+        self.add_temp_point(figure.get_points()[-1], x, y)
         return self.create_mat_from_buf(self.surface.get_data())
+
+    def get_result_mat(self, mat: ndarray, figure: BFigure):
+        self.init_b_area_drawer(np.copy(mat))
+        # coors = [[point.get_x(), point.get_y()] for point in figure.get_points()]
+        self.add_lines(figure.get_points())
+        self.add_points(figure.get_points())
+        return self.create_mat_from_buf(self.surface.get_data())
+
+    # def get_result_mat(self):
+    #     return self.create_mat_from_buf(self.surface.get_data())
 
     def draw_curve_and_point(self, x, y, mat, is_new_line):
         self.init_b_area_drawer(mat)
@@ -525,10 +561,36 @@ class BAreaDrawer(BObj):
         pass
 
     def add_point_to_sur(self, x, y, color, radius=3):
-        self.ctx.set_source_rgb(color[0], color[1], color[2])
+        self.ctx.set_source_rgb(color[0] / 255.0, color[1] / 255.0, color[2] / 255.0)
         self.ctx.arc(x, y, radius, 0, 2 * math.pi)
         self.ctx.fill()
         self.ctx.fill_preserve()
+
+    def add_points(self, points: [BPoint]):
+        for point in points:
+            self.ctx.set_source_rgb(point.get_color()[0] / 255.0, point.get_color()[1] / 255.0,
+                                    point.get_color()[2] / 255.0)
+            self.ctx.arc(point.get_x(), point.get_y(), point.get_radius(), 0, 2 * math.pi)
+            self.ctx.fill()
+        self.ctx.fill_preserve()
+
+    def add_lines(self, points, color=(35 / 255.0, 45 / 255.0, 15 / 255.0), line_width=2):
+        self.ctx.set_source_rgb(color[0], color[1], color[2])
+        self.ctx.set_line_width(line_width)
+        self.ctx.move_to(points[0].get_x(), points[0].get_y())
+        for point in points[1:]:
+            self.ctx.line_to(point.get_x(), point.get_y())
+        self.ctx.stroke()
+
+    def add_temp_line(self, last_point: BPoint, x, y, color=(35 / 255.0, 45 / 255.0, 15 / 255.0), line_width=2):
+        self.ctx.set_source_rgb(color[0], color[1], color[2])
+        self.ctx.set_line_width(line_width)
+        self.ctx.move_to(last_point.get_x(), last_point.get_y())
+        self.ctx.line_to(x, y)
+        self.ctx.stroke()
+
+    def add_temp_point(self, last_point: BPoint, x, y):
+        pass
 
     def update_saved_x_y(self, x, y):
         self.save_x, self.save_y = x, y
@@ -563,6 +625,8 @@ class BAreaDrawer(BObj):
         self.ctx.set_line_width(1)
         self.ctx.move_to(x1, y1)
         self.ctx.line_to(x2, y2)
+        # self.ctx.move_to(x1+5, y1+10)
+        # self.ctx.line_to(x2+20, y2+15)
         self.ctx.stroke()
 
     def edit_curve_line(self, x, y, x1, y1, x2, y2, x3, y3):
@@ -614,6 +678,9 @@ class BWindowWorker:
     IS_NEW_FIGURE = None
     IS_CREATE_CURVE_FIGURE_MODE = None
     IS_SELECT_FIGURE_MODE = None
+    IS_TEST_MODE = None
+    IS_NEW_MODE = None
+    IS_NEW_CREATE_MODE = None
 
     def __init__(self, window_name='Test window'):
         self.window_name = window_name

@@ -71,11 +71,12 @@ class BPlatform:
                                                                            np.copy(self.result_f_mat))
                 self.temp_f_mat = self.result_f_mat
         # elif event == cv2.EV and self.active_point:
-        elif event == cv2.EVENT_MOUSEHWHEEL and self.active_point:
+        elif event == cv2.EVENT_MOUSEMOVE and self.active_point:
             print('UP')
             print('Move')
             self.active_point.set_x(x)
             self.active_point.set_y(y)
+            self.result_f_mat = self.b_area_drawer.show_line(x, y, self.temp_f_mat, False)
             self.result_f_mat = self.b_area_drawer.draw_bold_point(self.active_point.get_x(),
                                                                    self.active_point.get_y(),
                                                                    np.copy(self.layer_mat))

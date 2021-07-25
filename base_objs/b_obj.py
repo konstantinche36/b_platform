@@ -137,11 +137,23 @@ class BFigure(BObj):
         self.b_points = b_points
         # self.
 
+    def set_point_color_radius(self, radius, color: (255, 255, 0)):
+        for point in self.b_points:
+            point.set_color(color)
+            point.set_radius(radius)
+
+    def set_point_color(self, color: (255, 255, 0)):
+        for point in self.b_points:
+            point.set_color(color)
+
     def add_new_point(self, x, y):
         self.b_points.append(BPoint('tt_' + self.get_name(), x, y))
 
     def get_points(self) -> [BPoint]:
         return self.b_points
+
+    def get_last_point(self) -> BPoint:
+        return self.b_points[-1] if len(self.b_points) > 0 else None
 
     def __str__(self):
         return f'{self.name}: \n' + '\t' + '\n\t'.join(str(x) for x in self.b_points)
@@ -160,7 +172,6 @@ class ArrayBD:
         self.figures_bd = {}
 
     def add_item(self, figure: BFigure):
-        print(figure.get_name(), '!!!!!!!!!!!!!!!!!!!!!!!')
         self.figures_bd[figure.get_name()] = figure
 
     def get_item(self, figure_name: str):
@@ -194,22 +205,32 @@ class BFigureWorker(BObj):
     def get_figures(self) -> [BFigure]:
         return self.figures_bd.get_all_items()
 
-    def get_selected_point(self, x, y, figure: BFigure):
+    def get_selected_point(self, x, y, figure: BFigure) -> BPoint:
         if figure is not None:
             for point in figure.get_points():
                 if (point.get_x() - x) ** 2 + (point.get_y() - y) ** 2 <= 5 ** 2:
                     return point
         return None
 
-    def get_selected_figure(self, x, y):
+    def get_point_of_figure_by_coors(self, x, y, figure:BFigure)-> BPoint:
+        for point in figure.get_points():
+            if self.is_coors_of_point(x,y,point.get_x(),point.get_y()):
+                return point
+        return None
+
+    def get_selected_figure(self, x, y)-> BFigure:
         for figure in self.figures_bd.get_all_items():
             list_points_of_figure = figure.get_points()
             for point in list_points_of_figure:
-                if (point.get_x() - x) ** 2 + (point.get_y() - y) ** 2 <= 5 ** 2:
+                if self.is_coors_of_point(x,y,point.get_x(),point.get_y()):
+                # if (point.get_x() - x) ** 2 + (point.get_y() - y) ** 2 <= 5 ** 2:
                     return figure
             if self.check_coors_on_line(x, y, list_points_of_figure):
                 return figure
         return None
+
+    def is_coors_of_point(self, x, y, p_x, p_y):
+        return (p_x- x) ** 2 + (p_y- y) ** 2 <= 5 ** 2
 
     def check_coors_on_line(self, x, y, points: [BPoint]):
         for p1, p2 in zip(points, points[1:]):
@@ -286,7 +307,6 @@ class BLayerWorker:
     def get_mat_from_list_layers(self):
         result_mat = self.get_base_layer().get_mat()
         for i, layer in enumerate(list(self.layers.values())[1:]):
-            print(i, layer.get_mat().shape)
             result_mat = self.merge_layers(result_mat, layer.get_mat())
         return result_mat
 
@@ -352,7 +372,6 @@ class BAreaWorker(BObj):
         result_mat = self.cur_b_area.get_base_mat()
         # simple_show_mat(result_mat, 'f1')
         layers = list(self.cur_b_area.get_layers().values())
-        print(len(layers))
         for layer in layers[1:]:
             result_mat = self.merge_layers(result_mat, layer.get_mat())
         return result_mat
@@ -481,9 +500,10 @@ class BAreaDrawer(BObj):
 
     def get_result_mat(self, mat: ndarray, figure: BFigure):
         self.init_b_area_drawer(np.copy(mat))
-        # coors = [[point.get_x(), point.get_y()] for point in figure.get_points()]
-        self.add_lines(figure.get_points())
-        self.add_points(figure.get_points())
+        if figure is not None:
+            # coors = [[point.get_x(), point.get_y()] for point in figure.get_points()]
+            self.add_lines(figure.get_points())
+            self.add_points(figure.get_points())
         return self.create_mat_from_buf(self.surface.get_data())
 
     # def get_result_mat(self):
@@ -582,7 +602,7 @@ class BAreaDrawer(BObj):
             self.ctx.line_to(point.get_x(), point.get_y())
         self.ctx.stroke()
 
-    def add_temp_line(self, last_point: BPoint, x, y, color=(35 / 255.0, 45 / 255.0, 15 / 255.0), line_width=2):
+    def add_temp_line(self, last_point: BPoint, x, y, color=(12 / 255.0, 140 / 255.0, 200 / 255.0), line_width=2):
         self.ctx.set_source_rgb(color[0], color[1], color[2])
         self.ctx.set_line_width(line_width)
         self.ctx.move_to(last_point.get_x(), last_point.get_y())

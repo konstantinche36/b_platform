@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 from utils import utils
-from base_objs.b_obj import BPoint, BFigure, BFigureWorker, BArea, BAreaWorker, BWindowWorker, BMatBD, BAreaDrawer, \
+from base_objs.b_obj import BCPoint, BPoint, BFigure, BFigureWorker, BArea, BAreaWorker, BWindowWorker, BMatBD, BAreaDrawer, \
     BLayerWorker
 from numpy import ndarray
 
@@ -38,7 +38,7 @@ class BPlatform:
 
         self.created_f_mat = None
         self.selected_figure = None
-        self.select_point = None
+        self.select_point: BPoint = None
         self.is_press_rb = None
 
     def click_event_doer(self, event, x, y, flags, params=None):
@@ -58,15 +58,7 @@ class BPlatform:
                     self.result_f_mat = self.b_area_drawer.draw_temp_line(self.temp_f_mat,
                                                                           self.b_figure_worker.get_current_figure(), x,
                                                                           y)
-                # if event == cv2.EVENT_RBUTTONDOWN:
-                #     self.init_new_figure()
-                #     self.save_to_result_mat()
-
             elif BWindowWorker.IS_SELECT_FIGURE_MODE:
-
-                # if event == cv2.EVENT_LBUTTONDOWN:
-                #     self.selected_figure = self.b_figure_worker.get_selected_figure(x, y)
-
                 print('Select+move mode')
                 if event == cv2.EVENT_LBUTTONDOWN:
                     self.is_press_rb = True
@@ -89,12 +81,16 @@ class BPlatform:
                     if self.select_point:
                         self.select_point.set_color((153, 255, 51))
 
+                self.reload_mat()
 
-
-                # self.result_f_mat = self.b_area_drawer.get_result_mat(self.created_f_mat, self.selected_figure)
-                self.result_f_mat = self.b_area_drawer.get_full_result_mat(self.source_f_mat, self.b_figure_worker.get_figures())
-                self.temp_f_mat = self.result_f_mat
-
+                if BWindowWorker.ADD_BEZIER_MODE:
+                    print('ADD BEZIER TO POINT')
+                    old_point = self.select_point
+                    bcpoint = BCPoint(old_point.get_name(),old_point.get_x(),old_point.get_y(),old_point.get_x() + 5,old_point.get_y() + 5)
+                    self.b_figure_worker.get_current_figure().get_points()[5] = bcpoint
+                    BWindowWorker.ADD_BEZIER_MODE = False
+                # self.result_f_mat = self.b_area_drawer.get_full_result_mat(self.source_f_mat, self.b_figure_worker.get_figures())
+                # self.temp_f_mat = self.result_f_mat
 
         # else:
         # if BWindowWorker.IS_TEST_MODE and self.active_figure:
@@ -159,6 +155,11 @@ class BPlatform:
 
         # self.create_active_mat()
 
+    def reload_mat(self):
+        self.result_f_mat = self.b_area_drawer.get_full_result_mat(self.source_f_mat,
+                                                                   self.b_figure_worker.get_figures())
+        self.temp_f_mat = self.result_f_mat
+
     def show_window(self, window_name):
         is_show = True
         cv2.namedWindow(window_name)
@@ -180,6 +181,12 @@ class BPlatform:
                 elif key == ord('s'):
                     cv2.putText(self.result_f_mat, 'Select mode', (10, 30), self.font, 1, (0, 255, 0), 1, cv2.LINE_AA)
                     BWindowWorker.IS_SELECT_FIGURE_MODE = True
+
+                elif key == ord('b') and BWindowWorker.IS_SELECT_FIGURE_MODE and self.select_point:
+                    print('RRRRRRR', self.select_point)
+                    cv2.putText(self.result_f_mat, 'Bezie mode', (10, 30), self.font, 1, (0, 255, 0), 1, cv2.LINE_AA)
+                    BWindowWorker.ADD_BEZIER_MODE = True
+                    print('ADD_BEZIER_MODE')
 
                 # elif key == ord('p') and self.active_figure:
                 #     cv2.putText(self.result_mat, 'Test Mode', (10, 30), self.font, 1, (0, 255, 0), 1, cv2.LINE_AA)
@@ -207,15 +214,12 @@ class BPlatform:
                 # #         self.result_mat = self.b_area_drawer.draw_bold_figure_from_list_coors(
                 # #             [[val.get_x(), val.get_y()] for val in self.active_figure.get_points()], self.layer_mat)
                 # #         self.temp_mat = self.result_mat
-                # elif key == ord('\b'):
-                #     cv2.putText(self.result_mat, 'Backspace mode', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0),
-                #                 1, cv2.LINE_AA)
-                #     self.b_figure_worker.remove_last_figure_point()
-                #     local_mat = self.get_mat_of_all_figures()
-                #     self.result_f_mat = local_mat
-                #     self.active_layer.set_mat(local_mat)
-                #     self.layer_mat = local_mat
-                #     self.temp_f_mat = self.result_f_mat
+                elif key == ord('\b') and BWindowWorker.IS_NEW_CREATE_MODE:
+                    print('200')
+                    cv2.putText(self.result_mat, 'Backspace mode', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0),
+                                1, cv2.LINE_AA)
+                    self.b_figure_worker.remove_last_figure_point()
+                    self.reload_mat()
 
                 elif key == 27:
                     self.esc_reset()

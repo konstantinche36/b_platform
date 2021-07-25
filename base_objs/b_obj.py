@@ -101,6 +101,12 @@ class BCPoint(BPoint):
     def get_y_c(self):
         return self.y_c
 
+    def set_x_c(self, x):
+        self.x_c = x
+
+    def set_y_c(self, y):
+        self.y_c = y
+
     def __str__(self):
         return super(BCPoint, self).__str__() + f' x_c:{self.x_c}, y_c:{self.y_c}'
 
@@ -617,6 +623,14 @@ class BAreaDrawer(BObj):
             self.ctx.line_to(point.get_x(), point.get_y())
         self.ctx.stroke()
 
+    # def add_lines(self, points, color=(35 / 255.0, 45 / 255.0, 15 / 255.0), line_width=2):
+    #     self.ctx.set_source_rgb(color[0], color[1], color[2])
+    #     self.ctx.set_line_width(line_width)
+    #     self.ctx.move_to(points[0].get_x(), points[0].get_y())
+    #     for point in points[1:]:
+    #         self.ctx.line_to(point.get_x(), point.get_y())
+    #     self.ctx.stroke()
+
     def add_temp_line(self, last_point: BPoint, x, y, color=(12 / 255.0, 140 / 255.0, 200 / 255.0), line_width=2):
         self.ctx.set_source_rgb(color[0], color[1], color[2])
         self.ctx.set_line_width(line_width)
@@ -717,6 +731,7 @@ class BWindowWorker:
     IS_NEW_MODE = None
     IS_NEW_CREATE_MODE = None
     IS_ESC_RESET_MODE = None
+    ADD_BEZIER_MODE = None
 
     def __init__(self, window_name='Test window'):
         self.window_name = window_name

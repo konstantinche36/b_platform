@@ -58,87 +58,94 @@ class BPlatform:
                     self.result_f_mat = self.b_area_drawer.draw_temp_line(self.temp_f_mat,
                                                                           self.b_figure_worker.get_current_figure(), x,
                                                                           y)
-                if event == cv2.EVENT_RBUTTONDOWN:
-                    self.init_new_figure()
-                    self.save_to_result_mat()
+                # if event == cv2.EVENT_RBUTTONDOWN:
+                #     self.init_new_figure()
+                #     self.save_to_result_mat()
 
             elif BWindowWorker.IS_SELECT_FIGURE_MODE:
+
+                # if event == cv2.EVENT_LBUTTONDOWN:
+                #     self.selected_figure = self.b_figure_worker.get_selected_figure(x, y)
+
                 print('Select+move mode')
                 if event == cv2.EVENT_LBUTTONDOWN:
                     self.is_press_rb = True
                     print('T1', self.is_press_rb)
                     self.selected_figure = self.b_figure_worker.get_selected_figure(x, y)
-                if event == cv2.EVENT_MOUSEMOVE and self.is_press_rb:
+                elif event == cv2.EVENT_MOUSEMOVE and self.is_press_rb:
                     print('Move mouse')
                     if self.select_point:
                         self.select_point.set_x(x)
                         self.select_point.set_y(y)
-                if event == cv2.EVENT_LBUTTONUP:
+                elif event == cv2.EVENT_LBUTTONUP:
                     print('T2')
                     self.is_press_rb = False
                     print(self.is_press_rb)
 
-
                 if self.selected_figure is not None:
-                    self.selected_figure.set_point_color_radius(5,(250, 250, 51))
+                    self.b_figure_worker.set_not_active_figures_color_size()
+                    self.selected_figure.set_point_color_radius(5, (250, 250, 51))
                     self.select_point = self.b_figure_worker.get_point_of_figure_by_coors(x, y, self.selected_figure)
                     if self.select_point:
-                        self.select_point.set_color((153,255,51))
+                        self.select_point.set_color((153, 255, 51))
 
-                self.result_f_mat = self.b_area_drawer.get_result_mat(self.created_f_mat,
-                                                                  self.selected_figure)
+
+
+                # self.result_f_mat = self.b_area_drawer.get_result_mat(self.created_f_mat, self.selected_figure)
+                self.result_f_mat = self.b_area_drawer.get_full_result_mat(self.source_f_mat, self.b_figure_worker.get_figures())
+                self.temp_f_mat = self.result_f_mat
 
 
         # else:
-            # if BWindowWorker.IS_TEST_MODE and self.active_figure:
-            #     print('Test mode')
-            #     # self.get_mat_of_all_figures()
-            #     # if event == cv2.EVENT_LBUTTONDOWN:
-            #     #     self.b_figure_worker.add_point(x, y)
-            #     #     self.result_f_mat = self.b_area_drawer.draw_line_and_point(x, y, self.active_layer.get_mat(),
-            #     #                                                                self.reset_line_params)
-            #     #     self.temp_f_mat = self.result_f_mat
-            #     #     self.reset_line_params = False
-            #     # if event == cv2.EVENT_MOUSEMOVE:
-            #     #     self.result_f_mat = self.b_area_drawer.show_line(x, y, self.temp_f_mat, self.reset_line_params)
-            #
-            # elif BWindowWorker.IS_EDIT_FIGURE_MODE:
-            #     self.active_point = self.b_figure_worker.get_selected_point(x, y, self.active_figure)
-            #     if self.active_point is not None:
-            #         self.active_point.set_color((9, 255, 0))
-            #         self.active_point.set_radius(9)
-            #         self.result_f_mat = self.b_area_drawer.draw_bold_point(self.active_point,
-            #                                                                np.copy(self.result_f_mat))
-            #     self.temp_f_mat = self.result_f_mat
-            #     print('IS_EDIT_MODE')
-            # elif BWindowWorker.IS_CREATE_FIGURE_MODE:
-            #     if event == cv2.EVENT_LBUTTONDOWN:
-            #         self.b_figure_worker.add_point(x, y)
-            #         self.result_f_mat = self.b_area_drawer.draw_line_and_point(x, y, self.active_layer.get_mat(),
-            #                                                                    self.reset_line_params)
-            #         self.temp_f_mat = self.result_f_mat
-            #         self.reset_line_params = False
-            #     if event == cv2.EVENT_MOUSEMOVE:
-            #         self.result_f_mat = self.b_area_drawer.show_line(x, y, self.temp_f_mat, self.reset_line_params)
-            #
-            # elif BWindowWorker.IS_CREATE_CURVE_FIGURE_MODE:
-            #     print('IS_CURVE_CREATE_MODE')
-            # elif BWindowWorker.IS_SELECT_FIGURE_MODE:
-            #     if event == cv2.EVENT_LBUTTONDOWN:
-            #         selected_figure = self.b_figure_worker.get_selected_figure(x, y)
-            #         self.active_figure = selected_figure
-            #
-            # elif event == cv2.EVENT_LBUTTONDOWN:
-            #     selected_figure = self.b_figure_worker.get_selected_figure(x, y)
-            #     print('SELECTED FIGURE', self.active_figure)
-            #     # selected_point = self.b_figure_worker.get_selected_point(x, y, selected_figure)
-            #     self.active_figure = selected_figure
-            #     # self.active_point = selected_point
-            #     self.b_figure_worker.set_current_figure(self.active_figure)
-            #     if self.active_figure is not None:
-            #         self.result_f_mat = self.b_area_drawer.draw_bold_figure_from_list_coors(
-            #             [[val.get_x(), val.get_y()] for val in self.active_figure.get_points()],
-            #             np.copy(self.layer_mat))
+        # if BWindowWorker.IS_TEST_MODE and self.active_figure:
+        #     print('Test mode')
+        #     # self.get_mat_of_all_figures()
+        #     # if event == cv2.EVENT_LBUTTONDOWN:
+        #     #     self.b_figure_worker.add_point(x, y)
+        #     #     self.result_f_mat = self.b_area_drawer.draw_line_and_point(x, y, self.active_layer.get_mat(),
+        #     #                                                                self.reset_line_params)
+        #     #     self.temp_f_mat = self.result_f_mat
+        #     #     self.reset_line_params = False
+        #     # if event == cv2.EVENT_MOUSEMOVE:
+        #     #     self.result_f_mat = self.b_area_drawer.show_line(x, y, self.temp_f_mat, self.reset_line_params)
+        #
+        # elif BWindowWorker.IS_EDIT_FIGURE_MODE:
+        #     self.active_point = self.b_figure_worker.get_selected_point(x, y, self.active_figure)
+        #     if self.active_point is not None:
+        #         self.active_point.set_color((9, 255, 0))
+        #         self.active_point.set_radius(9)
+        #         self.result_f_mat = self.b_area_drawer.draw_bold_point(self.active_point,
+        #                                                                np.copy(self.result_f_mat))
+        #     self.temp_f_mat = self.result_f_mat
+        #     print('IS_EDIT_MODE')
+        # elif BWindowWorker.IS_CREATE_FIGURE_MODE:
+        #     if event == cv2.EVENT_LBUTTONDOWN:
+        #         self.b_figure_worker.add_point(x, y)
+        #         self.result_f_mat = self.b_area_drawer.draw_line_and_point(x, y, self.active_layer.get_mat(),
+        #                                                                    self.reset_line_params)
+        #         self.temp_f_mat = self.result_f_mat
+        #         self.reset_line_params = False
+        #     if event == cv2.EVENT_MOUSEMOVE:
+        #         self.result_f_mat = self.b_area_drawer.show_line(x, y, self.temp_f_mat, self.reset_line_params)
+        #
+        # elif BWindowWorker.IS_CREATE_CURVE_FIGURE_MODE:
+        #     print('IS_CURVE_CREATE_MODE')
+        # elif BWindowWorker.IS_SELECT_FIGURE_MODE:
+        #     if event == cv2.EVENT_LBUTTONDOWN:
+        #         selected_figure = self.b_figure_worker.get_selected_figure(x, y)
+        #         self.active_figure = selected_figure
+        #
+        # elif event == cv2.EVENT_LBUTTONDOWN:
+        #     selected_figure = self.b_figure_worker.get_selected_figure(x, y)
+        #     print('SELECTED FIGURE', self.active_figure)
+        #     # selected_point = self.b_figure_worker.get_selected_point(x, y, selected_figure)
+        #     self.active_figure = selected_figure
+        #     # self.active_point = selected_point
+        #     self.b_figure_worker.set_current_figure(self.active_figure)
+        #     if self.active_figure is not None:
+        #         self.result_f_mat = self.b_area_drawer.draw_bold_figure_from_list_coors(
+        #             [[val.get_x(), val.get_y()] for val in self.active_figure.get_points()],
+        #             np.copy(self.layer_mat))
 
         # # elif event == cv2.EV and self.active_point:
         # elif event == cv2.EVENT_MOUSEMOVE and self.active_point:
@@ -165,7 +172,9 @@ class BPlatform:
                 if key == ord('n'):
                     BWindowWorker.IS_NEW_MODE = True
                 elif key == ord('j'):
-                    cv2.putText(self.result_f_mat, 'NEW create mode', (10, 30), self.font, 1, (0, 255, 0), 1, cv2.LINE_AA)
+                    self.esc_reset()
+                    cv2.putText(self.result_f_mat, 'NEW create mode', (10, 30), self.font, 1, (0, 255, 0), 1,
+                                cv2.LINE_AA)
                     BWindowWorker.IS_NEW_CREATE_MODE = True
                     self.init_new_figure()
                 elif key == ord('s'):
@@ -209,16 +218,23 @@ class BPlatform:
                 #     self.temp_f_mat = self.result_f_mat
 
                 elif key == 27:
-                    BWindowWorker.IS_SELECT_FIGURE_MODE = False
-                    BWindowWorker.IS_NEW_CREATE_MODE = False
-                    self.selected_figure = None
-                    self.select_point = None
+                    self.esc_reset()
                     # self.init_new_figure()
                     # self.result_f_mat = self.temp_f_mat
                     self.save_to_result_mat()
                 elif key == ord('q'):
                     break
         cv2.destroyAllWindows()
+
+    def esc_reset(self):
+        BWindowWorker.IS_SELECT_FIGURE_MODE = False
+        BWindowWorker.IS_NEW_CREATE_MODE = False
+        self.selected_figure = None
+        self.select_point = None
+        self.b_figure_worker.set_not_active_figures_color_size()
+        self.result_f_mat = self.b_area_drawer.get_full_result_mat(self.source_f_mat,
+                                                                   self.b_figure_worker.get_figures())
+        self.temp_f_mat = self.result_f_mat
 
     def save_to_result_mat(self):
         self.result_f_mat = self.temp_f_mat

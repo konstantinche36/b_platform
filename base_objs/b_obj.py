@@ -199,6 +199,12 @@ class BFigureWorker(BObj):
         self.current_figure: BFigure = None
         self.obj_name = name
 
+    def set_not_active_figures_color_size(self, color: (int, int, int) = (0, 0, 204), radius: int = 2):
+        for figure in self.get_figures():
+            for point in figure.get_points():
+                point.set_color(color)
+                point.set_radius(radius)
+
     def set_current_figure(self, figure: BFigure):
         self.current_figure = figure
 
@@ -212,25 +218,25 @@ class BFigureWorker(BObj):
                     return point
         return None
 
-    def get_point_of_figure_by_coors(self, x, y, figure:BFigure)-> BPoint:
+    def get_point_of_figure_by_coors(self, x, y, figure: BFigure) -> BPoint:
         for point in figure.get_points():
-            if self.is_coors_of_point(x,y,point.get_x(),point.get_y()):
+            if self.is_coors_of_point(x, y, point.get_x(), point.get_y()):
                 return point
         return None
 
-    def get_selected_figure(self, x, y)-> BFigure:
+    def get_selected_figure(self, x, y) -> BFigure:
         for figure in self.figures_bd.get_all_items():
             list_points_of_figure = figure.get_points()
             for point in list_points_of_figure:
-                if self.is_coors_of_point(x,y,point.get_x(),point.get_y()):
-                # if (point.get_x() - x) ** 2 + (point.get_y() - y) ** 2 <= 5 ** 2:
+                if self.is_coors_of_point(x, y, point.get_x(), point.get_y()):
+                    # if (point.get_x() - x) ** 2 + (point.get_y() - y) ** 2 <= 5 ** 2:
                     return figure
             if self.check_coors_on_line(x, y, list_points_of_figure):
                 return figure
         return None
 
     def is_coors_of_point(self, x, y, p_x, p_y):
-        return (p_x- x) ** 2 + (p_y- y) ** 2 <= 5 ** 2
+        return (p_x - x) ** 2 + (p_y - y) ** 2 <= 5 ** 2
 
     def check_coors_on_line(self, x, y, points: [BPoint]):
         for p1, p2 in zip(points, points[1:]):
@@ -498,6 +504,15 @@ class BAreaDrawer(BObj):
         self.add_temp_point(figure.get_points()[-1], x, y)
         return self.create_mat_from_buf(self.surface.get_data())
 
+    def get_full_result_mat(self, mat: ndarray, figures: [BFigure]):
+        self.init_b_area_drawer(np.copy(mat))
+        for figure in figures:
+            if figure is not None:
+                # coors = [[point.get_x(), point.get_y()] for point in figure.get_points()]
+                self.add_lines(figure.get_points())
+                self.add_points(figure.get_points())
+        return self.create_mat_from_buf(self.surface.get_data())
+
     def get_result_mat(self, mat: ndarray, figure: BFigure):
         self.init_b_area_drawer(np.copy(mat))
         if figure is not None:
@@ -701,6 +716,7 @@ class BWindowWorker:
     IS_TEST_MODE = None
     IS_NEW_MODE = None
     IS_NEW_CREATE_MODE = None
+    IS_ESC_RESET_MODE = None
 
     def __init__(self, window_name='Test window'):
         self.window_name = window_name

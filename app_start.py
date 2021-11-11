@@ -4,7 +4,8 @@ from b_mat.b_mat_worker import generate_mat_from_image
 
 if __name__ == '__main__':
     print('start!!!')
-    path = '/home/kostegan/work2021/scripts/b_platform/resize_test_img.png'
+    # path = '/home/kostegan/work2021/scripts/b_platform/resize_test_img.png'
+    path = '/home/kos/py_work_2021/b_platform/resize_test_img.png'
 
     mat = generate_mat_from_image(path)
     print(mat.shape)

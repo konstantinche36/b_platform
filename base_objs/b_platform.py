@@ -43,9 +43,9 @@ class BPlatform:
 
     def click_event_doer(self, event, x, y, flags, params=None):
         if BWindowWorker.IS_NEW_MODE:
-            print('New mode')
+            print('!!!New mode')
             if BWindowWorker.IS_NEW_CREATE_MODE:
-                print('New create mode')
+                print('!!!!New create mode')
                 if event == cv2.EVENT_LBUTTONDOWN:
                     self.b_figure_worker.add_point(x, y)
                     print(x, y)
@@ -214,6 +214,7 @@ class BPlatform:
                 # #         self.result_mat = self.b_area_drawer.draw_bold_figure_from_list_coors(
                 # #             [[val.get_x(), val.get_y()] for val in self.active_figure.get_points()], self.layer_mat)
                 # #         self.temp_mat = self.result_mat
+
                 elif key == ord('\b') and BWindowWorker.IS_NEW_CREATE_MODE:
                     print('200')
                     cv2.putText(self.result_mat, 'Backspace mode', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0),

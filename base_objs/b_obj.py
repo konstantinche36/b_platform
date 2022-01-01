@@ -205,7 +205,7 @@ class BFigureWorker(BObj):
         self.current_figure: BFigure = None
         self.obj_name = name
 
-    def set_not_active_figures_color_size(self, color: (int, int, int) = (0, 0, 204), radius: int = 2):
+    def set_not_active_figures_color_size(self, color: (int, int, int) = (0, 0, 204), radius: int = 3):
         for figure in self.get_figures():
             for point in figure.get_points():
                 point.set_color(color)
@@ -242,7 +242,7 @@ class BFigureWorker(BObj):
         return None
 
     def is_coors_of_point(self, x, y, p_x, p_y):
-        return (p_x - x) ** 2 + (p_y - y) ** 2 <= 5 ** 2
+        return (p_x - x) ** 2 + (p_y - y) ** 2 <= 10 ** 2
 
     def check_coors_on_line(self, x, y, points: [BPoint]):
         for p1, p2 in zip(points, points[1:]):
@@ -506,8 +506,9 @@ class BAreaDrawer(BObj):
 
     def draw_temp_line(self, mat: ndarray, figure: BFigure, x, y):
         self.init_b_area_drawer(np.copy(mat))
-        self.add_temp_line(figure.get_points()[-1], x, y)
-        self.add_temp_point(figure.get_points()[-1], x, y)
+        if len(figure.get_points()) > 0:
+            self.add_temp_line(figure.get_points()[-1], x, y)
+            self.add_temp_point(figure.get_points()[-1], x, y)
         return self.create_mat_from_buf(self.surface.get_data())
 
     def get_full_result_mat(self, mat: ndarray, figures: [BFigure]):
@@ -515,8 +516,9 @@ class BAreaDrawer(BObj):
         for figure in figures:
             if figure is not None:
                 # coors = [[point.get_x(), point.get_y()] for point in figure.get_points()]
-                self.add_lines(figure.get_points())
-                self.add_points(figure.get_points())
+                if len(figure.get_points())>0:
+                    self.add_lines(figure.get_points())
+                    self.add_points(figure.get_points())
         return self.create_mat_from_buf(self.surface.get_data())
 
     def get_result_mat(self, mat: ndarray, figure: BFigure):

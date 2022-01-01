@@ -1,6 +1,8 @@
 from base_objs.b_obj import BWindowWorker, BAreaWorker, BFigureWorker, BArea, BLayer
 from base_objs.b_platform import BPlatform
 from b_mat.b_mat_worker import generate_mat_from_image
+from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QScrollArea
+import sys
 
 if __name__ == '__main__':
     print('start!!!')
@@ -9,9 +11,12 @@ if __name__ == '__main__':
 
     mat = generate_mat_from_image(path)
     print(mat.shape)
-    print(mat[0][0])
     b_area_base = BArea(layers={'base_layer': BLayer(name='layer1', mat=mat)})
-    b_platform = BPlatform(BWindowWorker('Base Window 1'), mat, b_area_base,
+    app = QApplication(sys.argv)
+    b_platform = BPlatform()
+    b_platform.base_obj_init(BWindowWorker('Base Window 1'), mat, b_area_base,
                            b_area_worker=BAreaWorker('First', b_area_base), b_figure_worker=BFigureWorker('F1'))
-    b_platform.show_window('m1')
-    print('end!!!')
+    # b_platform.show_window('m1')
+    # b_platform.ui_show_window()
+    b_platform.show()
+    sys.exit(app.exec_())

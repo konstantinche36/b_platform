@@ -55,10 +55,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def open(self):
         image_formats = " ".join(
-            [
-                "*." + image_format.data().decode()
-                for image_format in QtGui.QImageReader.supportedImageFormats()
-            ]
+            [ "*." + image_format.data().decode() for image_format in QtGui.QImageReader.supportedImageFormats() ]
         )
 
         fileName, _ = QtWidgets.QFileDialog.getOpenFileName(

@@ -78,6 +78,7 @@ class BaseWin(QtWidgets.QMainWindow):
             is_loaded = self.view.load_image(fileName)
             # self.fitToWindowAct.setEnabled(is_loaded)
             # self.updateActions()
+            # todo
 
 
 class ModalM2(QtWidgets.QWidget):

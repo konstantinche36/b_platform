@@ -1,4 +1,8 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
+from PyQt5.QtGui import QWheelEvent
+from PyQt5.QtWidgets import QWidget
+from PyQt5.QtCore import Qt, QEvent
+
 from ui.des import *
 from ui.des_m2 import *
 import sys
@@ -9,8 +13,6 @@ class ImageViewer():
 
     def __init__(self, main_window):
         self.q_graphics_view = main_window.get_self_ui().graphicsView
-        # print(q_graphics_view.parentWidget().height(), q_graphics_view.parentWidget().width())
-        # self.q_graphics_view.setGeometry(QtCore.QRect(0, 0, main_window.width(), main_window.height()))
         self.q_graphics_view.setRenderHints(
             QtGui.QPainter.Antialiasing | QtGui.QPainter.SmoothPixmapTransform
         )

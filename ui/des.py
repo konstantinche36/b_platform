@@ -10,6 +10,7 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtGui import QWheelEvent
+from PyQt5.QtCore import Qt, QEvent
 
 
 class Ui_MainWindow(object):
@@ -91,3 +92,19 @@ class M1_QGraphicsView(QtWidgets.QGraphicsView):
         delta = self.mapToScene(view_pos) - self.mapToScene(
             self.viewport().rect().center())
         self.centerOn(scene_pos - delta)
+
+    def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
+
+        if event.button() == Qt.LeftButton:
+            self.bar_x = event.x()
+            self.bar_y = event.x()
+            print('OK!!! self.bar_x',self.bar_x)
+
+    def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
+        print('event.x() === ' + str(event.x()),'event.y() === '+str(event.y()))
+        print('self.horizontalScrollBar().x() ==== ' + str(self.horizontalScrollBar().x()))
+        print('self.horizontalScrollBar().x() ==== ' + str(self.horizontalScrollBar().value()))
+        self.horizontalScrollBar().setValue(self.horizontalScrollBar().value()+ (2 if self.bar_x > event.x() else -2))
+        self.verticalScrollBar().setValue(self.verticalScrollBar().value()+ (2 if self.bar_y > event.y() else -2))
+        # self.verticalScrollBar().setValue(self.horizontalScrollBar().y()+ event.y())
+        # self.horizontalScrollBar().setValue(self.verticalScrollBar().x()+ event.x())

@@ -12,6 +12,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtGui import QWheelEvent
 
 
+
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -91,3 +92,5 @@ class M1_QGraphicsView(QtWidgets.QGraphicsView):
         delta = self.mapToScene(view_pos) - self.mapToScene(
             self.viewport().rect().center())
         self.centerOn(scene_pos - delta)
+
+

@@ -1,10 +1,17 @@
-from PyQt5 import QtWidgets, QtGui, QtCore
-from PyQt5.QtGui import QWheelEvent
-from PyQt5.QtWidgets import QWidget
-from PyQt5.QtCore import Qt, QEvent
+# from PyQt5 import QtWidgets, QtGui, QtCore
+# from PyQt5.QtGui import QWheelEvent
+# from PyQt5.QtWidgets import QWidget
+# from PyQt5.QtCore import Qt, QEvent
+from PIL import Image
+
+from base_objs.b_obj import BWindowWorker, BAreaWorker, BFigureWorker, BArea, BLayer
+from b_mat.b_mat_worker import generate_mat_from_image
+from base_objs.nb_platform import BPlatform
+from PyQt5.QtGui import QFont, QPixmap, QMouseEvent, QImage, QWheelEvent
 
 from ui.des import *
 from ui.des_m2 import *
+from ui.des_m3 import *
 import sys
 
 
@@ -51,6 +58,9 @@ class ImageViewer():
 class BaseWin(QtWidgets.QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.is_loaded = None
+        self.b_platform = None
+        self.mat = None
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.view = ImageViewer(self)
@@ -58,8 +68,7 @@ class BaseWin(QtWidgets.QMainWindow):
         self.ui.actionZoom_in.triggered.connect(self.view.zoomIn)
         self.ui.actionZoom_out.triggered.connect(self.view.zoomOut)
         self.ui.actionNormal_view.triggered.connect(self.view.resetZoom)
-        self.modal = ModalM2(self)
-        self.modal.show()
+
 
     def get_self_ui(self):
         return self.ui
@@ -76,11 +85,45 @@ class BaseWin(QtWidgets.QMainWindow):
             QtCore.QDir.currentPath(),
             self.tr("Image Files({})".format(image_formats)),
         )
+        self.show_statusbar_msm('Open file: ' + fileName)
         if fileName:
-            is_loaded = self.view.load_image(fileName)
-            # self.fitToWindowAct.setEnabled(is_loaded)
-            # self.updateActions()
+            if fileName.endswith('.jpg'):
+                im1 = Image.open(fileName)
+                fileName = fileName[0:-3] + 'png'
+                print(fileName)
+                im1.save(fileName)
+            self.mat = generate_mat_from_image(fileName)
+            # print('self.mat.shape' + str(self.mat.shape))
+            self.is_loaded = self.view.load_image(fileName)
+            self.start_modal_windows()
+            self.b_platform = BPlatform(self.mat)
+            print('FINISH')
             # todo
+
+    def keyPressEvent(self, a0: QtGui.QKeyEvent) -> None:
+        if self.is_loaded:
+            if a0.key() == Qt.Key_Escape:
+                print('Escape button')
+                self.modal3.reset_all_button_color()
+
+    def start_modal_windows(self):
+        if self.is_loaded:
+            self.modal = ModalM2(self)
+            self.modal.show()
+            self.modal3 = ModalM3(self)
+            self.modal3.show()
+
+    def show_statusbar_msm(self, msm, sec=6000):
+        self.ui.statusbar.showMessage(msm, sec)
+
+    def update(self) -> None:
+        height, width, channel = self.result_f_mat.shape
+        bytesPerLine = 4 * width
+        qImg = QImage(self.result_f_mat.data, width, height, bytesPerLine, QImage.Format_RGBA8888).rgbSwapped()
+        pixmap = QPixmap(qImg)
+        pixmap_scaled = pixmap.scaled(900, 1200)
+        self.img.setPixmap(pixmap_scaled)
+        self.img.move(5, 5)
 
 
 class ModalM2(QtWidgets.QWidget):
@@ -101,6 +144,36 @@ class ModalM2(QtWidgets.QWidget):
         self.parent.view.factor = float(self.modal.lineEdit.text())
         self.modal.lineEdit.setText(str(self.parent.view.factor))
         self.def_start_val()
+
+
+class ModalM3(QtWidgets.QWidget):
+    def __init__(self, parent=BaseWin):
+        super().__init__(parent, QtCore.Qt.Window)
+        self.base_window = parent
+        self.modal = Ui_Form3()
+        self.modal.setupUi(self)
+        self.pressed_button_background_style = 'background-color: rgb(255, 255, 128);'
+        self.unpressed_button_background_style = 'background-color: rgb(240, 240, 240);'
+        self.pressed = None
+
+        self.modal.pushButton.clicked.connect(self.pressed_butt_create_figure)
+        self.modal.pushButton_3.clicked.connect(self.pressed_butt_foo)
+
+    def pressed_butt_create_figure(self):
+        self.modal.pushButton.setStyleSheet(self.pressed_button_background_style)
+        self.pressed = True
+        self.base_window.show_statusbar_msm('Pressed button: "create figure"', sec=0)
+
+    def pressed_butt_foo(self):
+        if self.pressed:
+            print('self.pressed')
+            self.reset_all_button_color()
+
+    def reset_all_button_color(self):
+        if self.pressed:
+            for button in self.modal.gridLayoutWidget.findChildren(QtWidgets.QPushButton):
+                button.setStyleSheet(self.unpressed_button_background_style)
+            self.pressed = False
 
 
 if __name__ == '__main__':

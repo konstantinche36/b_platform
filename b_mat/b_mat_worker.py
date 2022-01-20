@@ -1,7 +1,7 @@
 import cv2
 import cairo
 import numpy as np
-
+from PIL import Image
 
 def create_black_mat(height: int, width: int):
     return np.zeros(shape=[width, height, 3], dtype=np.uint8)
@@ -9,6 +9,12 @@ def create_black_mat(height: int, width: int):
 
 def generate_mat_from_image(image_path=None):
     if image_path is not None:
+        if image_path.endswith('.jpg'):
+            im1 = Image.open(image_path)
+            image_path = image_path[0:-3] + 'png'
+            im1.save(image_path)
+
+        # t_surface = cairo.ImageSurface.create_from_png(image_path)
         t_surface = cairo.ImageSurface.create_from_png(image_path)
         return np.ndarray(shape=(t_surface.get_height(), t_surface.get_width(), 4), dtype=np.uint8,
                           buffer=t_surface.get_data())

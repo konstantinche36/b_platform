@@ -144,9 +144,10 @@ class BFigure(BObj):
         # self.
 
     def set_point_color_radius(self, radius, color: (255, 255, 0)):
-        for point in self.b_points:
-            point.set_color(color)
-            point.set_radius(radius)
+        if self.b_points:
+            for point in self.b_points:
+                point.set_color(color)
+                point.set_radius(radius)
 
     def set_point_color(self, color: (255, 255, 0)):
         for point in self.b_points:
@@ -156,6 +157,9 @@ class BFigure(BObj):
         self.b_points.append(BPoint('tt_' + self.get_name(), x, y))
 
     def get_points(self) -> [BPoint]:
+        return self.b_points
+
+    def get_points(self, ) -> [BPoint]:
         return self.b_points
 
     def get_last_point(self) -> BPoint:
@@ -168,8 +172,15 @@ class BFigure(BObj):
         return self.name
 
     def remove_last_point(self):
-        if len(self.b_points) > 0:
-            self.b_points.pop(len(self.b_points) - 1)
+        if len(self.b_points) > 1:
+            print(self.b_points.pop(len(self.b_points) - 1))
+
+    def remove_point(self, point:BPoint):
+        for i in self.b_points:
+            print(point.get_x())
+            print('Type: ',type(i))
+            if point.get_x() == i.get_x() and point.get_y() == i.get_y():
+                self.b_points.remove(i)
 
 
 class ArrayBD:
@@ -178,7 +189,7 @@ class ArrayBD:
         self.figures_bd = {}
 
     def add_item(self, figure: BFigure):
-        self.figures_bd[figure.get_name()] = figure
+        self.figures_bd[figure.get_figure_name()] = figure
 
     def get_item(self, figure_name: str):
         # print(self.figures_bd)
@@ -202,8 +213,11 @@ class BFigureWorker(BObj):
         super().__init__(BFigureWorker.B_FIGURE_WORKER_NAME_PART + name)
         self.figures_bd = ArrayBD()
         self.has_current_figure = False
-        self.current_figure: BFigure = None
+        # self.current_figure: BFigure = None
+        self.current_figure: BFigure = BFigure('test1')
         self.obj_name = name
+
+
 
     def set_not_active_figures_color_size(self, color: (int, int, int) = (0, 0, 204), radius: int = 3):
         for figure in self.get_figures():
@@ -211,8 +225,15 @@ class BFigureWorker(BObj):
                 point.set_color(color)
                 point.set_radius(radius)
 
+    def highlight_figure(self, figure: BFigure, colors, radius):
+        figure.get_points()
+        pass
+
     def set_current_figure(self, figure: BFigure):
         self.current_figure = figure
+
+    def save_figure_to_bd(self, figure: BFigure):
+        self.figures_bd.add_item(figure)
 
     def get_figures(self) -> [BFigure]:
         return self.figures_bd.get_all_items()
@@ -268,8 +289,7 @@ class BFigureWorker(BObj):
         # return self.figures_bd.get_item(self.get_list_figures_name()[len(self.get_list_figures_name())-1])
 
     def create_figure(self, figure_name: str):
-        self.current_figure = BFigure(figure_name, None)
-        print(f'create figure is True')
+        return BFigure(figure_name, None)
 
     def get_list_figures_name(self):
         return self.figures_bd.print_bd_values()
@@ -280,6 +300,11 @@ class BFigureWorker(BObj):
     def add_point(self, x, y):
         print(f'function add_point val:{x} {y}')
         self.current_figure.add_new_point(x, y)
+
+    def add_point(self, x, y, figure: BFigure):
+        print(f'function add_point val:{x} {y}')
+        figure.add_new_point(x, y)
+        # self.current_figure.add_new_point(x, y)
 
     def get_current_figure(self):
         return self.current_figure
@@ -504,10 +529,10 @@ class BAreaDrawer(BObj):
     def add_s_line(self, x1, y1, x2, y2):
         self.build_line(x1, y1, x2, y2)
 
-    def draw_temp_line(self, mat: ndarray, figure: BFigure, x, y):
+    def draw_temp_line(self, mat: ndarray, figure: BFigure, x, y, line_width):
         self.init_b_area_drawer(np.copy(mat))
         if len(figure.get_points()) > 0:
-            self.add_temp_line(figure.get_points()[-1], x, y)
+            self.add_temp_line(figure.get_points()[-1], x, y,line_width=line_width)
             self.add_temp_point(figure.get_points()[-1], x, y)
         return self.create_mat_from_buf(self.surface.get_data())
 
@@ -516,7 +541,7 @@ class BAreaDrawer(BObj):
         for figure in figures:
             if figure is not None:
                 # coors = [[point.get_x(), point.get_y()] for point in figure.get_points()]
-                if len(figure.get_points())>0:
+                if len(figure.get_points()) > 0:
                     self.add_lines(figure.get_points())
                     self.add_points(figure.get_points())
         return self.create_mat_from_buf(self.surface.get_data())
@@ -614,6 +639,7 @@ class BAreaDrawer(BObj):
             self.ctx.set_source_rgb(point.get_color()[0] / 255.0, point.get_color()[1] / 255.0,
                                     point.get_color()[2] / 255.0)
             self.ctx.arc(point.get_x(), point.get_y(), point.get_radius(), 0, 2 * math.pi)
+            # self.ctx.arc(point.get_x(), point.get_y(), point.get_radius(), 0, 2 * math.pi)
             self.ctx.fill()
         self.ctx.fill_preserve()
 

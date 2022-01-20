@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QGraphicsItem
-from ui_app_start import BPBaseWindow
+# from ui_app_start import BPBaseWindow
 from utils import utils
 from base_objs.b_obj import BCPoint, BPoint, BFigure, BFigureWorker, BArea, BAreaWorker, BWindowWorker, BMatBD, \
     BAreaDrawer, \
@@ -49,6 +49,10 @@ class BPlatform(QWidget):
         self.selected_figure = None
         self.select_point: BPoint = None
         self.is_press_rb = None
+
+        self.scene = None
+        self.pixmap = None
+        self.item = None
 
     def base_obj_init(self,windows_worker: BWindowWorker, base_mat: ndarray, b_area: BArea, b_area_worker: BAreaWorker,
                  b_figure_worker: BFigureWorker, name='Default_platform_name'):
@@ -102,6 +106,12 @@ class BPlatform(QWidget):
         pixmap_scaled = pixmap.scaled(900, 1200)
         self.img.setPixmap(pixmap_scaled)
         self.img.move(5, 5)
+        print('Update')
+        # self.scene = QtWidgets.QGraphicsScene(self)
+        # self.pixmap = QPixmap(QImage(self.result_f_mat.data, width, height, bytesPerLine, QImage.Format_RGBA8888).rgbSwapped())
+        # self.item = QtWidgets.QGraphicsPixmapItem(self.pixmap)
+        # self.scene.addItem(self.item)
+        # self.setScene(self.scene)
 
 
     def display_info_label(self, text):
@@ -168,7 +178,7 @@ class BPlatform(QWidget):
             if self.active_point:
                 self.result_f_mat = self.b_area_drawer.draw_temp_line(self.temp_f_mat,
                                                                       self.b_figure_worker.get_current_figure(), x,
-                                                                  y)
+                                                                  y,2)
         elif BWindowWorker.IS_SELECT_FIGURE_MODE:
             print('1 self.is_press_rb : ', self.is_press_rb)
             if self.is_press_rb:
@@ -216,9 +226,13 @@ class BPlatform(QWidget):
             if BWindowWorker.IS_NEW_CREATE_MODE:
                 if event.button() == Qt.LeftButton:
                     print('Left button ', x, y)
-                    self.b_figure_worker.add_point(x, y)
+                    if self.b_figure_worker.get_current_figure is None:
+                        self.b_figure_worker.create_figure()
+                        self.b_figure_worker.add_point(x, y)
+                    else:
+                        self.b_figure_worker.add_point(x, y, self.b_figure_worker.get_current_figure())
                     print(x, y)
-                    self.result_f_mat = self.b_area_drawer.get_result_mat(self.result_f_mat, self.b_figure_worker.get_current_figure())
+                    self.result_f_mat = self.b_area_drawer.get_result_mat(self.result_f_mat, self.b_figure_worker.get_current_figure(),5)
                     self.temp_f_mat = self.result_f_mat
                     self.active_point = self.active_figure.get_last_point()
                     self.created_f_mat = np.copy(self.result_f_mat)
@@ -293,7 +307,7 @@ class BPlatform(QWidget):
 
     def reload_mat(self):
         self.result_f_mat = self.b_area_drawer.get_full_result_mat(self.source_f_mat,
-                                                                   self.b_figure_worker.get_figures())
+                                                                   self.b_figure_worker.get_figures(), 3)
         self.temp_f_mat = self.result_f_mat
 
     # def show_window(self, window_name):
@@ -350,7 +364,7 @@ class BPlatform(QWidget):
         self.b_figure_worker.set_not_active_figures_color_size()
         print(self.b_figure_worker.get_figures())
         self.result_f_mat = self.b_area_drawer.get_full_result_mat(self.source_f_mat,
-                                                                   self.b_figure_worker.get_figures())
+                                                                   self.b_figure_worker.get_figures(),3)
         self.temp_f_mat = self.result_f_mat
 
     def save_to_result_mat(self):

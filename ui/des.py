@@ -11,16 +11,19 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtGui import QWheelEvent
 from PyQt5.QtCore import Qt, QEvent
+from b_graphicsView import *
 
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
+        MainWindow.mat
         MainWindow.resize(1059, 709)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         # self.graphicsView = QtWidgets.QGraphicsView(self.centralwidget)
-        self.graphicsView = M1_QGraphicsView(self.centralwidget)
+        # self.graphicsView = M1_QGraphicsView(self.centralwidget)
+        self.graphicsView = M1_QGraphicsView(self.centralwidget.parent().b_platform,self.centralwidget.parent())
         self.graphicsView.setGeometry(QtCore.QRect(0, 0, 1061, 661))
         self.graphicsView.setObjectName("graphicsView")
         MainWindow.setCentralWidget(self.graphicsView)
@@ -79,7 +82,7 @@ class Ui_MainWindow(object):
         self.actionNormal_view.setShortcut(_translate("MainWindow", "Ctrl+0"))
 
 
-class M1_QGraphicsView(QtWidgets.QGraphicsView):
+class M1_QGraphicsView_Demo(QtWidgets.QGraphicsView):
 
     def wheelEvent(self, event: QWheelEvent):
         factor = 1.1
@@ -100,11 +103,34 @@ class M1_QGraphicsView(QtWidgets.QGraphicsView):
             self.bar_y = event.x()
             print('OK!!! self.bar_x',self.bar_x)
 
-    def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
-        print('event.x() === ' + str(event.x()),'event.y() === '+str(event.y()))
-        print('self.horizontalScrollBar().x() ==== ' + str(self.horizontalScrollBar().x()))
-        print('self.horizontalScrollBar().x() ==== ' + str(self.horizontalScrollBar().value()))
-        self.horizontalScrollBar().setValue(self.horizontalScrollBar().value()+ (2 if self.bar_x > event.x() else -2))
-        self.verticalScrollBar().setValue(self.verticalScrollBar().value()+ (2 if self.bar_y > event.y() else -2))
-        # self.verticalScrollBar().setValue(self.horizontalScrollBar().y()+ event.y())
-        # self.horizontalScrollBar().setValue(self.verticalScrollBar().x()+ event.x())
+    # def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
+    #     print('event.x() === ' + str(event.x()),'event.y() === '+str(event.y()))
+    #     print('self.horizontalScrollBar().x() ==== ' + str(self.horizontalScrollBar().x()))
+    #     print('self.horizontalScrollBar().x() ==== ' + str(self.horizontalScrollBar().value()))
+    #     print('self.bar_x --> ' + str(self.bar_x))
+    #     # self.bar_y
+    #     # self.horizontalScrollBar().setValue(self.horizontalScrollBar().value()+ (2 if self.bar_x > event.x() else -2))
+    #     # self.verticalScrollBar().setValue(self.verticalScrollBar().value()+ (2 if self.bar_y > event.y() else -2))
+    #     # self.verticalScrollBar().setValue(self.horizontalScrollBar().y()+ event.y())
+    #     # self.horizontalScrollBar().setValue(self.verticalScrollBar().x()+ event.x())
+
+
+    def mouseMoveEvent(self, a0: QtGui.QMouseEvent) -> None:
+        self.show_statusbar_msm('DROWWWWW')
+        x, y = a0.x() +self.scroll_area.horizontalScrollBar().value(), a0.y() +self.scroll_area.verticalScrollBar().value()
+        if BWindowWorker.IS_NEW_CREATE_MODE:
+
+            if self.active_point:
+                self.result_f_mat = self.b_area_drawer.draw_temp_line(self.temp_f_mat,
+                                                                      self.b_figure_worker.get_current_figure(), x,
+                                                                  y)
+        elif BWindowWorker.IS_SELECT_FIGURE_MODE:
+            print('1 self.is_press_rb : ', self.is_press_rb)
+            if self.is_press_rb:
+                print('1 self.is_press_rb : ', self.is_press_rb)
+                if self.select_point:
+                    print('2 self.select_point : ', self.select_point)
+                    self.select_point.set_x(x)
+                    self.select_point.set_y(y)
+                    self.reload_mat()
+        self.update()

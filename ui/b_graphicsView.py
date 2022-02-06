@@ -59,21 +59,21 @@ class M1_QGraphicsView(QtWidgets.QGraphicsView):
             if self.action_list[0]:
                 self.b_platform.delete_point_last_point()
         elif event.key() == Qt.Key_Delete:
-            if self.action_list[1]:
+            if self.action_list[1] and self.b_platform.selected_figure and self.b_platform.selected_point:
                 print('Start delete')
                 print('self.b_platform.selected_point   ',self.b_platform.selected_point)
-                self.b_platform.delete_point(self.b_platform.selected_point)
-                self.b_platform.selected_point = None
+                self.b_platform.delete_point(self.b_platform.last_selected_point)
+                # self.b_platform.selected_point = None
 
     def wheelEvent(self, event: QWheelEvent):
         factor = 1.1
         if event.angleDelta().x() or event.angleDelta().y() < 0:
             factor = 0.9
             self.b_platform.set_line_width(self.b_platform.line_width + 0.02)
-            self.b_platform.dot_radius += 0.05
+            self.b_platform.dot_radius += 0.03
         else:
             self.b_platform.set_line_width(self.b_platform.line_width - 0.02)
-            self.b_platform.dot_radius -= 0.05
+            self.b_platform.dot_radius -= 0.03
         view_pos = event.pos()
         scene_pos = self.mapToScene(view_pos)
         self.centerOn(scene_pos)
@@ -100,12 +100,13 @@ class M1_QGraphicsView(QtWidgets.QGraphicsView):
         self.store_last_x_y_co_position(event)
         x, y = self.get_coors(event)
         self.b_platform.do_action(x, y, self.action_list)
-        if event.button() == Qt.LeftButton and self.action_list[1] and self.b_platform.co_pop_to_point(x,y): # and self.b_platform.selected_point:
+        if event.button() == Qt.LeftButton and self.action_list[1] and self.b_platform.co_pop_to_point(x,y):
             self.is_press_rb = True
         self.reload_mat_and_update()
 
     def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
         self.is_press_rb = False
+        self.b_platform.last_selected_point = self.b_platform.selected_point
         self.b_platform.selected_point = None
     def update_mat(self, mat):
         height, width, channel = self.b_platform.result_f_mat.shape

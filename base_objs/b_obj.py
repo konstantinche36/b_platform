@@ -218,7 +218,6 @@ class BFigureWorker(BObj):
         self.obj_name = name
 
 
-
     def set_not_active_figures_color_size(self, color: (int, int, int) = (0, 0, 204), radius: int = 3):
         for figure in self.get_figures():
             for point in figure.get_points():
@@ -536,22 +535,22 @@ class BAreaDrawer(BObj):
             self.add_temp_point(figure.get_points()[-1], x, y)
         return self.create_mat_from_buf(self.surface.get_data())
 
-    def get_full_result_mat(self, mat: ndarray, figures: [BFigure]):
+    def get_full_result_mat(self, mat: ndarray, figures: [BFigure], dot_radius, line_width):
         self.init_b_area_drawer(np.copy(mat))
         for figure in figures:
             if figure is not None:
                 # coors = [[point.get_x(), point.get_y()] for point in figure.get_points()]
                 if len(figure.get_points()) > 0:
-                    self.add_lines(figure.get_points())
-                    self.add_points(figure.get_points())
+                    self.add_lines(figure.get_points(),line_width=line_width)
+                    self.add_points(figure.get_points(), radius=dot_radius)
         return self.create_mat_from_buf(self.surface.get_data())
 
-    def get_result_mat(self, mat: ndarray, figure: BFigure):
+    def get_result_mat(self, mat: ndarray, figure: BFigure, radius,line_width):
         self.init_b_area_drawer(np.copy(mat))
         if figure is not None:
             # coors = [[point.get_x(), point.get_y()] for point in figure.get_points()]
-            self.add_lines(figure.get_points())
-            self.add_points(figure.get_points())
+            self.add_lines(figure.get_points(), line_width=line_width)
+            self.add_points(figure.get_points(), radius=radius)
         return self.create_mat_from_buf(self.surface.get_data())
 
     # def get_result_mat(self):
@@ -634,11 +633,11 @@ class BAreaDrawer(BObj):
         self.ctx.fill()
         self.ctx.fill_preserve()
 
-    def add_points(self, points: [BPoint]):
+    def add_points(self, points: [BPoint], radius):
         for point in points:
             self.ctx.set_source_rgb(point.get_color()[0] / 255.0, point.get_color()[1] / 255.0,
                                     point.get_color()[2] / 255.0)
-            self.ctx.arc(point.get_x(), point.get_y(), point.get_radius(), 0, 2 * math.pi)
+            self.ctx.arc(point.get_x(), point.get_y(), radius, 0, 2 * math.pi)
             # self.ctx.arc(point.get_x(), point.get_y(), point.get_radius(), 0, 2 * math.pi)
             self.ctx.fill()
         self.ctx.fill_preserve()

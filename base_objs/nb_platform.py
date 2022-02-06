@@ -19,10 +19,11 @@ class BPlatform:
         self.active_figure: BFigure = None
         self.active_point: BPoint = None
         self.selected_figure: BFigure = None
-        self.line_width = 1
+        self.line_width = 1.5
         self.temp_line_width = 1
-        self.dot_radius = 3
+        self.dot_radius = 2.5
         self.selected_point: BPoint = None
+        self.last_selected_point: BPoint = None
 
         self.b_area = BArea(layers={'base_layer': BLayer(name='layer1', mat=mat)})
         self.b_area_worker = BAreaWorker('demo_Area_worker', self.b_area)
@@ -31,7 +32,7 @@ class BPlatform:
 
     def reload_mat(self):
         self.result_f_mat = self.b_area_drawer.get_full_result_mat(self.source_f_mat,
-                                                                   self.b_figure_worker.get_figures())
+                                                                   self.b_figure_worker.get_figures(),self.dot_radius,self.line_width)
         self.temp_f_mat = self.result_f_mat
 
     def create_new_figure(self):
@@ -50,29 +51,58 @@ class BPlatform:
         # self.b_figure_worker.set_not_active_figures_color_size()
 
     def select(self, x, y):
-        self.b_figure_worker.set_not_active_figures_color_size()
+        self.selected_figure = self.select_figure_by_co(x, y)
         if self.selected_figure:
-            print('Selected!!!')
+            print('selected figure', self.selected_figure)
             self.highlight_selected_figure()
-            if self.selected_point:
-                self.highlight_selected_point()
-                self.move_selected_point(x,y)
-            else:
-                self.selected_point = self.select_point_by_co(x, y)
             pass
         else:
-            print('Not selected!!!')
-            self.selected_figure = self.select_figure_by_co(x, y)
-        self.reload_mat()
+            print('Not selected')
 
-    def co_pop_to_point(self, x,y):
-        return self.b_figure_worker.get_selected_point(x,y,self.selected_figure)
+
+
+
+    def select_v2(self, x, y):
+        if self.selected_figure is None:
+            self.b_figure_worker.set_not_active_figures_color_size()
+            self.selected_figure = self.select_figure_by_co(x, y)
+            if self.selected_figure:
+                self.highlight_selected_figure()
+                print('Selected!!!')
+                # self.highlight_selected_figure()
+                if self.selected_point:
+                    self.highlight_selected_point()
+                    self.move_selected_point(x, y)
+                else:
+                    self.selected_point = self.select_point_by_co(x, y)
+            else:
+                print('Not selected!!!')
+                # self.selected_figure = self.select_figure_by_co(x, y)
+                # self.highlight_selected_figure()
+            self.reload_mat()
+
+    def simple_select(self, x, y) -> BFigure:
+        return self.get_obj_by_co(x, y)
+
+    def get_obj_by_co(self, x, y):
+        if self.selected_figure:
+            self.selected_point = self.select_point_by_co(x, y)
+            return self.selected_point
+        else:
+            return self.select_figure_by_co(x, y)
+        return None
+
+    def select_point_by_co(self, x, y):
+        self.b_figure_worker.get_selected_point(x, y, self.selected_figure)
+
+    def co_pop_to_point(self, x, y):
+        return self.b_figure_worker.get_selected_point(x, y, self.selected_figure)
 
     def select_figure_by_co(self, x, y):
         return self.b_figure_worker.get_selected_figure(x, y)
 
     def select_point_by_co(self, x, y):
-        return self.b_figure_worker.get_selected_point(x,y,self.selected_figure)
+        return self.b_figure_worker.get_selected_point(x, y, self.selected_figure)
 
     def highlight_selected_figure(self, color_of_selected_figure=(250, 250, 51), radius=5):
         print('Highlight figure!')
@@ -80,6 +110,7 @@ class BPlatform:
 
     def highlight_selected_point(self, color_of_selected_point=(153, 255, 51), radius=8):
         print('Highlight figure!')
+        print(self.selected_point is None)
         self.selected_point.set_color(color_of_selected_point)
         self.selected_point.set_radius(radius)
 
@@ -91,7 +122,7 @@ class BPlatform:
         self.selected_figure.remove_last_point()
         self.reload_mat()
 
-    def delete_point(self,point:BPoint):
+    def delete_point(self, point: BPoint):
         print(point is None)
         self.selected_figure.remove_point(point)
         self.reload_mat()
@@ -104,7 +135,7 @@ class BPlatform:
         if self.selected_figure is None:
             self.selected_figure = self.create_new_figure()
         self.b_figure_worker.add_point(x, y, self.selected_figure)
-        self.result_f_mat = self.b_area_drawer.get_result_mat(self.result_f_mat, self.selected_figure)
+        self.result_f_mat = self.b_area_drawer.get_result_mat(self.result_f_mat, self.selected_figure, self.dot_radius, self.line_width)
 
     def draw_clear_point(self, x, y):
         if self.active_point:
@@ -129,3 +160,9 @@ class BPlatform:
 def locate_app_on_center_of_window(window_name, image_width: int):
     offset_x_y = utils.get_offset(utils.get_screen_size()[0], image_width)
     cv2.moveWindow(window_name, offset_x_y[0], offset_x_y[1])
+
+
+if __name__ == '__main__':
+    print('start')
+    b_f = BPlatform(mat=None)
+    print('finish')

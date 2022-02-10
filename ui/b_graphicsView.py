@@ -42,6 +42,10 @@ class M1_QGraphicsView(QtWidgets.QGraphicsView):
         self.reset_mode_action_list()
         self.action_list[2] = True
 
+    def edit_mode_enable(self):
+        self.reset_mode_action_list()
+        self.action_list[3] = True
+
     def reset_mode_action_list(self):
         self.action_list = [False] * 10
 
@@ -60,7 +64,10 @@ class M1_QGraphicsView(QtWidgets.QGraphicsView):
             self.select_mode_enable()
         elif event.key() == Qt.Key_M:
             self.move_mode_enable()
+        elif event.key() == Qt.Key_E:
+            self.edit_mode_enable()
         elif event.key() == Qt.Key_Escape:
+            print(self.b_platform.selected_figure)
             self.reset_mode_action_list()
             self.b_platform.selected_point = None
             self.b_platform.selected_figure = None
@@ -70,7 +77,8 @@ class M1_QGraphicsView(QtWidgets.QGraphicsView):
                 self.b_platform.delete_point_last_point()
         elif event.key() == Qt.Key_Delete:
             print('DELETE')
-            print('Objects ::: ', self.action_list[2], self.b_platform.selected_figure, self.b_platform.last_selected_point)
+            print('Objects ::: ', self.action_list[2], self.b_platform.selected_figure,
+                  self.b_platform.last_selected_point)
             if self.action_list[2] and self.b_platform.selected_figure and self.b_platform.last_selected_point:
                 # self.b_platform.delete_point(self.b_platform.last_selected_point)
                 # self.b_platform.delete_point(self.b_platform.selected_point)
@@ -101,7 +109,7 @@ class M1_QGraphicsView(QtWidgets.QGraphicsView):
         if self.action_list[0]:
             self.b_platform.draw_temp_line(x, y)
             self.update_mat(self.b_platform.result_f_mat)
-        elif self.action_list[2]:
+        elif self.action_list[2] or self.action_list[3]:
             if self.is_press_rb:
                 self.b_platform.do_action(x, y, self.action_list)
                 self.reload_mat_and_update()
@@ -115,8 +123,7 @@ class M1_QGraphicsView(QtWidgets.QGraphicsView):
         self.store_last_x_y_co_position(event)
         x, y = self.get_coors(event)
         self.b_platform.do_action(x, y, self.action_list)
-        if event.button() == Qt.LeftButton and self.action_list[2] and self.b_platform.co_pop_to_point(x, y):
-            print(111111111)
+        if event.button() == Qt.LeftButton and (self.action_list[2] or self.action_list[3]) and self.b_platform.co_pop_to_point(x, y):
             self.is_press_rb = True
         self.reload_mat_and_update()
 

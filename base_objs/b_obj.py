@@ -156,11 +156,14 @@ class BFigure(BObj):
     def add_new_point(self, x, y):
         self.b_points.append(BPoint('tt_' + self.get_name(), x, y))
 
+    def add_new_cur_point(self, x, y):
+        self.b_points.append(BCPoint('tt_' + self.get_name(), x, y))
+
     def get_points(self) -> [BPoint]:
         return self.b_points
 
-    def get_points(self, ) -> [BPoint]:
-        return self.b_points
+    # def get_points(self, ) -> [BPoint]:
+    #     return self.b_points
 
     def get_last_point(self) -> BPoint:
         return self.b_points[-1] if len(self.b_points) > 0 else None
@@ -243,7 +246,14 @@ class BFigureWorker(BObj):
     def get_figures(self) -> [BFigure]:
         return self.figures_bd.get_all_items()
 
-    def get_selected_point(self, x, y, figure: BFigure) -> BPoint:
+    def get_selected_point(self, x, y, figure: BFigure, radius) -> BPoint:
+        if figure is not None:
+            for point in figure.get_points():
+                if (point.get_x() - x) ** 2 + (point.get_y() - y) ** 2 <= radius ** 2:
+                    return point
+        return None
+
+    def get_selected_point_rezerv(self, x, y, figure: BFigure) -> BPoint:
         if figure is not None:
             for point in figure.get_points():
                 if (point.get_x() - x) ** 2 + (point.get_y() - y) ** 2 <= 5 ** 2:
@@ -256,19 +266,19 @@ class BFigureWorker(BObj):
                 return point
         return None
 
-    def get_selected_figure(self, x, y) -> BFigure:
+    def get_selected_figure(self, x, y, radius) -> BFigure:
         for figure in self.figures_bd.get_all_items():
             list_points_of_figure = figure.get_points()
             for point in list_points_of_figure:
-                if self.is_coors_of_point(x, y, point.get_x(), point.get_y()):
+                if self.is_coors_of_point(x, y, point.get_x(), point.get_y(), radius):
                     # if (point.get_x() - x) ** 2 + (point.get_y() - y) ** 2 <= 5 ** 2:
                     return figure
             if self.check_coors_on_line(x, y, list_points_of_figure):
                 return figure
         return None
 
-    def is_coors_of_point(self, x, y, p_x, p_y):
-        return (p_x - x) ** 2 + (p_y - y) ** 2 <= 10 ** 2
+    def is_coors_of_point(self, x, y, p_x, p_y, radius):
+        return (p_x - x) ** 2 + (p_y - y) ** 2 <= (radius - 1) ** 2
 
     def check_coors_on_line(self, x, y, points: [BPoint]):
         for p1, p2 in zip(points, points[1:]):
@@ -314,6 +324,12 @@ class BFigureWorker(BObj):
     def add_point(self, x, y, figure: BFigure):
         print(f'function add_point val:{x} {y} 22222')
         figure.add_new_point(x, y)
+        # self.current_figure.add_new_point(x, y)
+
+    def add_curve_point(self, x, y, figure: BFigure):
+        print(f'function add_cur_point val:{x} {y} 22222')
+        # figure.add_new_point(x, y)
+        figure.add_new_cur_point(x, y)
         # self.current_figure.add_new_point(x, y)
 
     def get_current_figure(self):
@@ -660,7 +676,7 @@ class BAreaDrawer(BObj):
         self.ctx.fill()
         self.ctx.fill_preserve()
 
-    def add_points(self, points: [BPoint], radius, color=None):
+    def add_points(self, points: [BCPoint], radius, color=None):
         for point in points:
             if color is None:
                 self.ctx.set_source_rgb(point.get_color()[0] / 255.0, point.get_color()[1] / 255.0,
@@ -668,7 +684,9 @@ class BAreaDrawer(BObj):
             else:
                 self.ctx.set_source_rgb(color[0] / 255.0, color[1] / 255.0,
                                         color[2] / 255.0)
+            # self.ctx.arc(point.get_x(), point.get_y(), radius, 0, 2 * math.pi)
             self.ctx.arc(point.get_x(), point.get_y(), radius, 0, 2 * math.pi)
+            # self.ctx.arc(point.get_x_c(), point.get_y_c(), radius, 0, 2 * math.pi)
             self.ctx.fill()
         self.ctx.fill_preserve()
 

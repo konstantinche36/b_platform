@@ -67,8 +67,13 @@ class BPlatform:
         elif action[2]:
             self.select(x, y)
             self.move(x, y)
+        elif action[3]:
+            self.select(x, y)
+            self.move(x, y)
+            self.edit_point(x, y)
         else:
             pass
+        print(self.selected_figure)
 
     def select(self, x, y):
         if self.selected_point is None:
@@ -78,6 +83,10 @@ class BPlatform:
     def move(self, x, y):
         if self.selected_point:
             self.move_selected_point(x, y)
+
+    def edit_point(self, x, y):
+        if self.selected_point:
+            self.add_curves_for_selected_point(x, y)
 
     # def simple_select(self, x, y) -> BFigure:
     #     return self.get_obj_by_co(x, y)
@@ -91,17 +100,22 @@ class BPlatform:
         return None
 
     def co_pop_to_point(self, x, y):
-        return self.b_figure_worker.get_selected_point(x, y, self.selected_figure)
+        return self.b_figure_worker.get_selected_point(x, y, self.selected_figure, self.dot_radius)
 
     def select_figure_by_co(self, x, y):
-        return self.b_figure_worker.get_selected_figure(x, y)
+        return self.b_figure_worker.get_selected_figure(x, y, self.dot_radius)
 
     def select_point_by_co(self, x, y):
-        return self.b_figure_worker.get_selected_point(x, y, self.selected_figure)
+        return self.b_figure_worker.get_selected_point(x, y, self.selected_figure, self.dot_radius)
 
     def move_selected_point(self, x, y):
         self.selected_point.set_x(x)
         self.selected_point.set_y(y)
+
+    def add_curves_for_selected_point(self, x, y):
+        print('Added curve points!!!')
+        self.selected_point.x_c = x
+        self.selected_point.y_c = y
 
     def delete_point_last_point(self):
         self.selected_figure.remove_last_point()
@@ -113,9 +127,9 @@ class BPlatform:
     def add_point(self, x, y):
         if self.selected_figure is None:
             self.selected_figure = self.create_new_figure()
-        self.b_figure_worker.add_point(x, y, self.selected_figure)
-        self.result_f_mat = self.b_area_drawer.get_result_mat(self.result_f_mat, self.selected_figure, self.dot_radius,
-                                                              self.line_width)
+        self.b_figure_worker.add_curve_point(x, y, self.selected_figure)
+        # self.result_f_mat = self.b_area_drawer.get_result_mat(self.result_f_mat, self.selected_figure, self.dot_radius,
+        #                                                       self.line_width)
 
     def draw_temp_line(self, x, y):
         if self.selected_figure is not None:
@@ -125,6 +139,7 @@ class BPlatform:
 
     def set_line_width(self, line_width):
         self.line_width = line_width
+
 
 def locate_app_on_center_of_window(window_name, image_width: int):
     offset_x_y = utils.get_offset(utils.get_screen_size()[0], image_width)

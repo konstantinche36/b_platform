@@ -175,10 +175,12 @@ class BFigure(BObj):
         if len(self.b_points) > 1:
             print(self.b_points.pop(len(self.b_points) - 1))
 
-    def remove_point(self, point:BPoint):
+    def remove_point(self, point: BPoint):
+        print('rem OK')
+
         for i in self.b_points:
-            print(point.get_x())
-            print('Type: ',type(i))
+            # print(point.get_x())
+            # print('Type: ', type(i))
             if point.get_x() == i.get_x() and point.get_y() == i.get_y():
                 self.b_points.remove(i)
 
@@ -217,6 +219,10 @@ class BFigureWorker(BObj):
         self.current_figure: BFigure = BFigure('test1')
         self.obj_name = name
 
+    def actived_figure(self, figure: BFigure = None):
+        if figure is not None:
+            self.current_figure = figure
+        return self
 
     def set_not_active_figures_color_size(self, color: (int, int, int) = (0, 0, 204), radius: int = 3):
         for figure in self.get_figures():
@@ -296,12 +302,17 @@ class BFigureWorker(BObj):
     def save_current_figure_to_bd(self):
         self.figures_bd.add_item(self.current_figure)
 
-    def add_point(self, x, y):
-        print(f'function add_point val:{x} {y}')
-        self.current_figure.add_new_point(x, y)
+    # def add_point_v2(self, x, y):
+    #     print(f'function add_point val:{x} {y}')
+    #     self.current_figure.add_new_point(x, y)
+    #     return self.current_figure
+
+    # def add_point(self, x, y):
+    #     print(f'function add_point val:{x} {y} 1111')
+    #     self.current_figure.add_new_point(x, y)
 
     def add_point(self, x, y, figure: BFigure):
-        print(f'function add_point val:{x} {y}')
+        print(f'function add_point val:{x} {y} 22222')
         figure.add_new_point(x, y)
         # self.current_figure.add_new_point(x, y)
 
@@ -312,10 +323,10 @@ class BFigureWorker(BObj):
         # return ''
         return self.figures_bd.get_item(name)
 
-    def print_figure(self, b_figure):
-        print(self.current_figure.get_points())
-        # # todo
-        # pass
+    # def print_figure(self, b_figure):
+    #     print(self.current_figure.get_points())
+    #     # # todo
+    #     # pass
 
 
 class BLayerWorker:
@@ -531,7 +542,7 @@ class BAreaDrawer(BObj):
     def draw_temp_line(self, mat: ndarray, figure: BFigure, x, y, line_width):
         self.init_b_area_drawer(np.copy(mat))
         if len(figure.get_points()) > 0:
-            self.add_temp_line(figure.get_points()[-1], x, y,line_width=line_width)
+            self.add_temp_line(figure.get_points()[-1], x, y, line_width=line_width)
             self.add_temp_point(figure.get_points()[-1], x, y)
         return self.create_mat_from_buf(self.surface.get_data())
 
@@ -541,11 +552,27 @@ class BAreaDrawer(BObj):
             if figure is not None:
                 # coors = [[point.get_x(), point.get_y()] for point in figure.get_points()]
                 if len(figure.get_points()) > 0:
-                    self.add_lines(figure.get_points(),line_width=line_width)
+                    self.add_lines(figure.get_points(), line_width=line_width)
                     self.add_points(figure.get_points(), radius=dot_radius)
         return self.create_mat_from_buf(self.surface.get_data())
 
-    def get_result_mat(self, mat: ndarray, figure: BFigure, radius,line_width):
+    def create_full_mat(self, base_mat: ndarray, figures: [BFigure], selected_figure, selected_points: [BPoint],
+                        dot_radius, line_width, selected_line_color, selected_points_color, selected_point_color):
+        self.init_b_area_drawer(np.copy(base_mat))
+        for figure in figures:
+            if figure is not None:
+                if len(figure.get_points()) > 0:
+                    self.add_lines(figure.get_points(), line_width=line_width)
+                    self.add_points(figure.get_points(), radius=dot_radius)
+        if selected_figure is not None:
+            if len(figure.get_points()) > 0:
+                self.add_lines(selected_figure.get_points(), line_width=line_width, color=selected_line_color)
+                self.add_points(selected_figure.get_points(), radius=dot_radius, color=selected_points_color)
+                if selected_points is not None:
+                    self.add_points([selected_points], radius=dot_radius + 1, color=selected_point_color)
+        return self.create_mat_from_buf(self.surface.get_data())
+
+    def get_result_mat(self, mat: ndarray, figure: BFigure, radius, line_width):
         self.init_b_area_drawer(np.copy(mat))
         if figure is not None:
             # coors = [[point.get_x(), point.get_y()] for point in figure.get_points()]
@@ -633,12 +660,15 @@ class BAreaDrawer(BObj):
         self.ctx.fill()
         self.ctx.fill_preserve()
 
-    def add_points(self, points: [BPoint], radius):
+    def add_points(self, points: [BPoint], radius, color=None):
         for point in points:
-            self.ctx.set_source_rgb(point.get_color()[0] / 255.0, point.get_color()[1] / 255.0,
-                                    point.get_color()[2] / 255.0)
+            if color is None:
+                self.ctx.set_source_rgb(point.get_color()[0] / 255.0, point.get_color()[1] / 255.0,
+                                        point.get_color()[2] / 255.0)
+            else:
+                self.ctx.set_source_rgb(color[0] / 255.0, color[1] / 255.0,
+                                        color[2] / 255.0)
             self.ctx.arc(point.get_x(), point.get_y(), radius, 0, 2 * math.pi)
-            # self.ctx.arc(point.get_x(), point.get_y(), point.get_radius(), 0, 2 * math.pi)
             self.ctx.fill()
         self.ctx.fill_preserve()
 
@@ -728,10 +758,6 @@ class BAreaDrawer(BObj):
 
     def create_mat_from_buf(self, buf):
         l1 = np.ndarray(shape=(self.height, self.width, 4), dtype=np.uint8, buffer=buf)
-        # print('8888888888888888888888888888888888888')
-        # simple_show_mat(l1)
-        # simple_show_mat(l1, 'ttt')
-        # print(l1.shape)
         return l1
 
 

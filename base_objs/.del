@@ -46,6 +46,7 @@ class BPlatform:
         self.temp_f_mat = self.result_f_mat
 
     def redraw_mat(self):
+        # print('Redraw figure::: ', 'selected figure is :: ', self.selected_figure)
         self.result_f_mat = self.b_area_drawer.create_full_mat(self.source_f_mat, self.b_figure_worker.get_figures(),
                                                                self.selected_figure, self.selected_point,
                                                                self.dot_radius, self.line_width,
@@ -56,6 +57,7 @@ class BPlatform:
 
     def create_new_figure(self):
         new_figure: BFigure = self.b_figure_worker.create_figure(utils.get_random_name())
+        # print(new_figure.get_figure_name())
         self.b_figure_worker.save_figure_to_bd(new_figure)
         return new_figure
 
@@ -65,10 +67,15 @@ class BPlatform:
         elif action[1]:
             self.select(x, y)
         elif action[2]:
+            # print('Action 22222')
             self.select(x, y)
             self.move(x, y)
+        # elif action[2]:
+        #     self.select(x, y)
         else:
             pass
+            # print('Empty action')
+        # self.b_figure_worker.set_not_active_figures_color_size()
 
     def select(self, x, y):
         if self.selected_point is None:
@@ -77,10 +84,41 @@ class BPlatform:
 
     def move(self, x, y):
         if self.selected_point:
+            print('MOVEDDDD')
             self.move_selected_point(x, y)
 
-    # def simple_select(self, x, y) -> BFigure:
-    #     return self.get_obj_by_co(x, y)
+    # def select_v0(self, x, y):
+    #     self.selected_figure = self.select_figure_by_co(x, y)
+    #     if self.selected_figure:
+    #         # print('selected figure', self.selected_figure)
+    #         self.highlight_selected_figure()
+    #         pass
+    #     else:
+    #         self.dehighlight_selected_figure()
+    #         # print('Not selected')
+
+    # def select_v2(self, x, y):
+    #     if self.selected_figure is None:
+    #         self.b_figure_worker.set_not_active_figures_color_size()
+    #         self.selected_figure = self.select_figure_by_co(x, y)
+    #         if self.selected_figure:
+    #             self.highlight_selected_figure()
+    #             # print('Selected!!!')
+    #             # self.highlight_selected_figure()
+    #             if self.selected_point:
+    #                 self.highlight_selected_point()
+    #                 self.move_selected_point(x, y)
+    #             else:
+    #                 self.selected_point = self.select_point_by_co(x, y)
+    #         else:
+    #             pass
+    #             # print('Not selected!!!')
+    #             # self.selected_figure = self.select_figure_by_co(x, y)
+    #             # self.highlight_selected_figure()
+    #         self.reload_mat()
+
+    def simple_select(self, x, y) -> BFigure:
+        return self.get_obj_by_co(x, y)
 
     def get_obj_by_co(self, x, y):
         if self.selected_figure:
@@ -89,6 +127,9 @@ class BPlatform:
         else:
             return self.select_figure_by_co(x, y)
         return None
+
+    def select_point_by_co(self, x, y):
+        self.b_figure_worker.get_selected_point(x, y, self.selected_figure)
 
     def co_pop_to_point(self, x, y):
         return self.b_figure_worker.get_selected_point(x, y, self.selected_figure)
@@ -99,6 +140,20 @@ class BPlatform:
     def select_point_by_co(self, x, y):
         return self.b_figure_worker.get_selected_point(x, y, self.selected_figure)
 
+    # def highlight_selected_figure(self, color_of_selected_figure=(250, 250, 51), radius=5):
+    #     # print('Highlight figure!')
+    #     self.selected_figure.set_point_color_radius(radius, color_of_selected_figure)
+
+    # def dehighlight_selected_figure(self, color_of_selected_figure=(250, 250, 51), radius=5):
+    #     # print('Highlight figure!')
+    #     self.selected_figure.set_point_color_radius(self.dot_radius, (250, 250, 51))
+
+    # def highlight_selected_point(self, color_of_selected_point=(153, 255, 51), radius=8):
+    #     # print('Highlight figure!')
+    #     # print(self.selected_point is None)
+    #     self.selected_point.set_color(color_of_selected_point)
+    #     self.selected_point.set_radius(radius)
+
     def move_selected_point(self, x, y):
         self.selected_point.set_x(x)
         self.selected_point.set_y(y)
@@ -107,8 +162,17 @@ class BPlatform:
         self.selected_figure.remove_last_point()
         self.reload_mat()
 
-    def delete_point_from_figure(self, point: BPoint):
+    # def delete_point(self, point: BPoint):
+    #     # print(point is None)
+    #     self.selected_figure.remove_point(point)
+    #     self.reload_mat()
+
+    def delete_point_from_figure(self,point:BPoint):
         self.selected_figure.remove_point(point)
+
+    # def reset_selected_figure(self):
+    #     self.b_figure_worker.set_not_active_figures_color_size()
+    #     self.selected_figure = None
 
     def add_point(self, x, y):
         if self.selected_figure is None:
@@ -117,14 +181,24 @@ class BPlatform:
         self.result_f_mat = self.b_area_drawer.get_result_mat(self.result_f_mat, self.selected_figure, self.dot_radius,
                                                               self.line_width)
 
+    # def draw_clear_point(self, x, y):
+    #     if self.active_point:
+    #         self.result_f_mat = self.b_area_drawer.draw_temp_line(self.temp_f_mat,
+    #                                                               self.b_figure_worker.get_current_figure(), x,
+    #                                                               y)
+
     def draw_temp_line(self, x, y):
         if self.selected_figure is not None:
             self.result_f_mat = self.b_area_drawer.draw_temp_line(self.temp_f_mat,
                                                                   self.selected_figure, x,
                                                                   y, line_width=self.line_width)
 
-    def set_line_width(self, line_width):
-        self.line_width = line_width
+    # def set_temp_line_width(self, temp_line_width):
+    #     self.temp_line_width = temp_line_width
+    #
+    # def set_line_width(self, line_width):
+    #     self.line_width = line_width
+
 
 def locate_app_on_center_of_window(window_name, image_width: int):
     offset_x_y = utils.get_offset(utils.get_screen_size()[0], image_width)

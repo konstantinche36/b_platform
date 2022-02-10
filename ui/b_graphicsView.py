@@ -7,6 +7,7 @@ from PyQt5.QtGui import QPixmap
 from base_objs.b_obj import BWindowWorker
 from PyQt5.QtCore import Qt
 
+
 class M1_QGraphicsView(QtWidgets.QGraphicsView):
     def __init__(self, b_platform: BPlatform, parent):
         super(M1_QGraphicsView, self).__init__()
@@ -37,6 +38,10 @@ class M1_QGraphicsView(QtWidgets.QGraphicsView):
         self.reset_mode_action_list()
         self.action_list[1] = True
 
+    def move_mode_enable(self):
+        self.reset_mode_action_list()
+        self.action_list[2] = True
+
     def reset_mode_action_list(self):
         self.action_list = [False] * 10
 
@@ -53,17 +58,25 @@ class M1_QGraphicsView(QtWidgets.QGraphicsView):
             self.create_mode_enable()
         elif event.key() == Qt.Key_S:
             self.select_mode_enable()
+        elif event.key() == Qt.Key_M:
+            self.move_mode_enable()
         elif event.key() == Qt.Key_Escape:
             self.reset_mode_action_list()
+            self.b_platform.selected_point = None
+            self.b_platform.selected_figure = None
+            self.reload_mat_and_update()
         elif event.key() == Qt.Key_Backspace:
             if self.action_list[0]:
                 self.b_platform.delete_point_last_point()
         elif event.key() == Qt.Key_Delete:
-            if self.action_list[1] and self.b_platform.selected_figure and self.b_platform.selected_point:
-                print('Start delete')
-                print('self.b_platform.selected_point   ',self.b_platform.selected_point)
-                self.b_platform.delete_point(self.b_platform.last_selected_point)
-                # self.b_platform.selected_point = None
+            print('DELETE')
+            print('Objects ::: ', self.action_list[2], self.b_platform.selected_figure, self.b_platform.last_selected_point)
+            if self.action_list[2] and self.b_platform.selected_figure and self.b_platform.last_selected_point:
+                # self.b_platform.delete_point(self.b_platform.last_selected_point)
+                # self.b_platform.delete_point(self.b_platform.selected_point)
+                self.b_platform.delete_point_from_figure(self.b_platform.last_selected_point)
+                print('Is deleted')
+        self.reload_mat_and_update()
 
     def wheelEvent(self, event: QWheelEvent):
         factor = 1.1
@@ -87,27 +100,26 @@ class M1_QGraphicsView(QtWidgets.QGraphicsView):
         x, y = self.get_coors(a0)
         if self.action_list[0]:
             self.b_platform.draw_temp_line(x, y)
-        elif self.action_list[1]:
+            self.update_mat(self.b_platform.result_f_mat)
+        elif self.action_list[2]:
             if self.is_press_rb:
                 self.b_platform.do_action(x, y, self.action_list)
-                self.b_platform.reload_mat()
-        else:
-            self.b_platform.reload_mat()
-            self.b_platform.reset_selected_figure()
-        self.update_mat(self.b_platform.result_f_mat)
-
-    def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
-        self.store_last_x_y_co_position(event)
-        x, y = self.get_coors(event)
-        self.b_platform.do_action(x, y, self.action_list)
-        if event.button() == Qt.LeftButton and self.action_list[1] and self.b_platform.co_pop_to_point(x,y):
-            self.is_press_rb = True
-        self.reload_mat_and_update()
+                self.reload_mat_and_update()
 
     def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
         self.is_press_rb = False
         self.b_platform.last_selected_point = self.b_platform.selected_point
         self.b_platform.selected_point = None
+
+    def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
+        self.store_last_x_y_co_position(event)
+        x, y = self.get_coors(event)
+        self.b_platform.do_action(x, y, self.action_list)
+        if event.button() == Qt.LeftButton and self.action_list[2] and self.b_platform.co_pop_to_point(x, y):
+            print(111111111)
+            self.is_press_rb = True
+        self.reload_mat_and_update()
+
     def update_mat(self, mat):
         height, width, channel = self.b_platform.result_f_mat.shape
         bytesPerLine = 4 * width
@@ -121,7 +133,7 @@ class M1_QGraphicsView(QtWidgets.QGraphicsView):
         return scene_pos.x(), scene_pos.y()
 
     def reload_mat_and_update(self):
-        self.b_platform.reload_mat()
+        self.b_platform.redraw_mat()
         self.update_mat(self.b_platform.result_f_mat)
 
     def store_last_x_y_co_position(self, event):
@@ -132,7 +144,6 @@ class M1_QGraphicsView(QtWidgets.QGraphicsView):
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     m1 = M1_QGraphicsView(BPlatform(generate_mat_from_image('./pic1.jpg')), None)
-    # m1.select_mode_enable()
     m1.update_mat(m1.b_platform.result_f_mat)
     m1.show()
     BWindowWorker.IS_NEW_CREATE_MODE = True

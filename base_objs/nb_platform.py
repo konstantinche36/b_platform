@@ -31,7 +31,7 @@ class BPlatform:
         self.line_width = 1.5
         self.temp_line_width = 1
         self.dot_radius = 2.5
-        self.selected_point: BPoint = None
+        self.selected_point: BCPoint = None
         self.last_selected_point: BPoint = None
 
         self.b_area = BArea(layers={'base_layer': BLayer(name='layer1', mat=mat)})
@@ -69,11 +69,17 @@ class BPlatform:
             self.move(x, y)
         elif action[3]:
             self.select(x, y)
-            self.move(x, y)
-            self.edit_point(x, y)
+            self.add_curves_for_selected_point(x, y)
+        elif action[4]:
+            print('ADDED CURVE')
+            # self.add_curve(x, y)
+            # self.move(x, y)
+            # self.edit_point(x, y)
         else:
             pass
-        print(self.selected_figure)
+
+    def add_curve(self, x, y):
+        print('Add curve x y ', x, y)
 
     def select(self, x, y):
         if self.selected_point is None:
@@ -86,10 +92,8 @@ class BPlatform:
 
     def edit_point(self, x, y):
         if self.selected_point:
+            print('DODODOD')
             self.add_curves_for_selected_point(x, y)
-
-    # def simple_select(self, x, y) -> BFigure:
-    #     return self.get_obj_by_co(x, y)
 
     def get_obj_by_co(self, x, y):
         if self.selected_figure:
@@ -111,11 +115,20 @@ class BPlatform:
     def move_selected_point(self, x, y):
         self.selected_point.set_x(x)
         self.selected_point.set_y(y)
+        # if len(self.selected_point.coors) > 2:
+        #     print('UPDATE XC YC')
+        #     self.selected_point.update_x_c(x)
+        #     print(self.selected_point)
+        #     self.selected_point.update_y_c(y)
 
     def add_curves_for_selected_point(self, x, y):
-        print('Added curve points!!!')
-        self.selected_point.x_c = x
-        self.selected_point.y_c = y
+        if self.selected_point:
+            print('Added curve points!!!')
+            self.selected_point.coors[2] = x
+            self.selected_point.coors[3] = y
+            if self.selected_point.last_coor_x_y() and self.selected_point.last_coor_x_y()[0] != x and \
+                    self.selected_point.last_coor_x_y()[1] != y:
+                x + x * (-1) + x, y + y * (-1) + y
 
     def delete_point_last_point(self):
         self.selected_figure.remove_last_point()
@@ -128,8 +141,6 @@ class BPlatform:
         if self.selected_figure is None:
             self.selected_figure = self.create_new_figure()
         self.b_figure_worker.add_curve_point(x, y, self.selected_figure)
-        # self.result_f_mat = self.b_area_drawer.get_result_mat(self.result_f_mat, self.selected_figure, self.dot_radius,
-        #                                                       self.line_width)
 
     def draw_temp_line(self, x, y):
         if self.selected_figure is not None:

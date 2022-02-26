@@ -30,6 +30,8 @@ class M1_QGraphicsView(QtWidgets.QGraphicsView):
         self.last_mouse_x = 0
         self.last_mouse_y = 0
 
+        self.create_curve = False
+
     def create_mode_enable(self):
         self.reset_mode_action_list()
         self.action_list[0] = True
@@ -45,6 +47,10 @@ class M1_QGraphicsView(QtWidgets.QGraphicsView):
     def edit_mode_enable(self):
         self.reset_mode_action_list()
         self.action_list[3] = True
+
+    def add_curve_mode_enable(self):
+        self.reset_mode_action_list()
+        self.action_list[4] = True
 
     def reset_mode_action_list(self):
         self.action_list = [False] * 10
@@ -66,8 +72,11 @@ class M1_QGraphicsView(QtWidgets.QGraphicsView):
             self.move_mode_enable()
         elif event.key() == Qt.Key_E:
             self.edit_mode_enable()
+        elif event.key() == Qt.Key_J:
+            if self.action_list[2]:
+                self.create_curve = True
         elif event.key() == Qt.Key_Escape:
-            print(self.b_platform.selected_figure)
+            # print(self.b_platform.selected_figure)
             self.reset_mode_action_list()
             self.b_platform.selected_point = None
             self.b_platform.selected_figure = None
@@ -76,15 +85,22 @@ class M1_QGraphicsView(QtWidgets.QGraphicsView):
             if self.action_list[0]:
                 self.b_platform.delete_point_last_point()
         elif event.key() == Qt.Key_Delete:
-            print('DELETE')
-            print('Objects ::: ', self.action_list[2], self.b_platform.selected_figure,
-                  self.b_platform.last_selected_point)
+            pass
+            # print('DELETE')
+            # print('Objects ::: ', self.action_list[2], self.b_platform.selected_figure,
+            #       self.b_platform.last_selected_point)
             if self.action_list[2] and self.b_platform.selected_figure and self.b_platform.last_selected_point:
                 # self.b_platform.delete_point(self.b_platform.last_selected_point)
                 # self.b_platform.delete_point(self.b_platform.selected_point)
                 self.b_platform.delete_point_from_figure(self.b_platform.last_selected_point)
-                print('Is deleted')
+                # print('Is deleted')
         self.reload_mat_and_update()
+
+    # def keyReleaseEvent(self, event: QtGui.QKeyEvent) -> None:
+    #     if event.key() == Qt.Key_J:
+    #         print('Press J')
+    #     print('Relise 1111')
+    #     pass
 
     def wheelEvent(self, event: QWheelEvent):
         factor = 1.1
@@ -107,17 +123,29 @@ class M1_QGraphicsView(QtWidgets.QGraphicsView):
     def mouseMoveEvent(self, a0: QtGui.QMouseEvent) -> None:
         x, y = self.get_coors(a0)
         if self.action_list[0]:
+            print('11111111111')
             self.b_platform.draw_temp_line(x, y)
-            self.update_mat(self.b_platform.result_f_mat)
+            self.update_mat()
         elif self.action_list[2] or self.action_list[3]:
             if self.is_press_rb:
                 self.b_platform.do_action(x, y, self.action_list)
                 self.reload_mat_and_update()
+        # elif self.action_list[2] or self.action_list[3] and self.create_curve:
+        #     # print('x,y val ::: ', x,y)
+        #     self.b_platform.add_curves_for_selected_point(x, y)
+        #     # self.create_curve = False
 
     def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
+        print('Unpress')
+        x, y = self.get_coors(event)
         self.is_press_rb = False
         self.b_platform.last_selected_point = self.b_platform.selected_point
         self.b_platform.selected_point = None
+        if self.action_list[4]:
+            print('CURVE MODE')
+            self.b_platform.do_action(x, y, self.action_list)
+            self.create_mode_enable()
+
 
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
         self.store_last_x_y_co_position(event)
@@ -125,9 +153,12 @@ class M1_QGraphicsView(QtWidgets.QGraphicsView):
         self.b_platform.do_action(x, y, self.action_list)
         if event.button() == Qt.LeftButton and (self.action_list[2] or self.action_list[3]) and self.b_platform.co_pop_to_point(x, y):
             self.is_press_rb = True
+        if len(self.b_platform.selected_figure.get_points())>1 and self.action_list[0]:
+            print('!!!!!!!!!!!!!!!!!!!!!!')
+            self.add_curve_mode_enable()
         self.reload_mat_and_update()
 
-    def update_mat(self, mat):
+    def update_mat(self):
         height, width, channel = self.b_platform.result_f_mat.shape
         bytesPerLine = 4 * width
         self.pixmap = QPixmap(
@@ -141,7 +172,7 @@ class M1_QGraphicsView(QtWidgets.QGraphicsView):
 
     def reload_mat_and_update(self):
         self.b_platform.redraw_mat()
-        self.update_mat(self.b_platform.result_f_mat)
+        self.update_mat()
 
     def store_last_x_y_co_position(self, event):
         self.last_mouse_x = event.x()
@@ -151,7 +182,7 @@ class M1_QGraphicsView(QtWidgets.QGraphicsView):
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     m1 = M1_QGraphicsView(BPlatform(generate_mat_from_image('./pic1.jpg')), None)
-    m1.update_mat(m1.b_platform.result_f_mat)
+    m1.update_mat()
     m1.show()
     BWindowWorker.IS_NEW_CREATE_MODE = True
     sys.exit(app.exec_())
